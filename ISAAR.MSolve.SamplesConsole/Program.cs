@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.SamplesConsole
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
         }
-
+        //kati
 
         static void Main(string[] args)
         {
