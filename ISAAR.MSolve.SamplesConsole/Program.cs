@@ -33,7 +33,8 @@ namespace ISAAR.MSolve.SamplesConsole
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
         }
-        //kati
+        static double[,] Dimer = new double[3, 3];
+        Matrix2D<double> kati = new Matrix2D<double>(Dimer);
 
         static void Main(string[] args)
         {

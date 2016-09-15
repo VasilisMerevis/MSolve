@@ -172,6 +172,26 @@ namespace ISAAR.MSolve.Matrices
             double[] v2Data = v.Data as double[];
             for (int i = 0; i < data.Length; i++) v1Data[i] -= v2Data[i];
         }
+
+        public static T[,] operator ^(Vector<T> v1, Vector<T> v2)
+        {
+            if (typeof(T) != typeof(double)) throw new InvalidOperationException("Only double type is supported.");
+            int vector1rows = v1.Length;
+            int vector2cols = v2.Length;
+            double[,] matrix = new double[vector1rows, vector2cols];
+            double[] vector1 = v1.Data as double[];
+            double[] vector2 = v2.Data as double[];
+            for (int i = 0; i < vector1rows; i++)
+            {
+                for (int j = 0; j < vector2cols; j++)
+                {
+                    matrix[i, j] = vector1[i] * vector2[j];
+                }
+            }
+            return matrix as T[,];
+        }
+
+        
         #region IVector<T> Members
 
         public int Length
