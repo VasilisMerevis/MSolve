@@ -187,8 +187,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 { 0 , 4 * E * I / lengthInitial, 2 * E * I / lengthInitial },
                 { 0 , 2 * E * I / lengthInitial, 4 * E * I / lengthInitial }
             };
-            IVector<>
-            internalLocalForcesVector = 
+            return null;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)

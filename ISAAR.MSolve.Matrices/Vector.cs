@@ -190,7 +190,6 @@ namespace ISAAR.MSolve.Matrices
             }
             return matrix as T[,];
         }
-
         
         #region IVector<T> Members
 
