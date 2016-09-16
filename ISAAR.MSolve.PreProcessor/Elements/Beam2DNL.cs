@@ -187,6 +187,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 { 0 , 4 * E * I / lengthInitial, 2 * E * I / lengthInitial },
                 { 0 , 2 * E * I / lengthInitial, 4 * E * I / lengthInitial }
             };
+            Vector<double> localForceVec = new Vector<double>(this.internalLocalForcesVector);
+            Matrix2D<double> Dmat = new Matrix2D<double>(Dmatrix);
+            Vector<double> malakia;
+            malakia = Dmat * localForceVec;
             return null;
         }
 

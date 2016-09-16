@@ -173,7 +173,7 @@ namespace ISAAR.MSolve.Matrices
             for (int i = 0; i < data.Length; i++) v1Data[i] -= v2Data[i];
         }
 
-        public static T[,] operator ^(Vector<T> v1, Vector<T> v2)
+        public static Matrix2D<T> operator ^(Vector<T> v1, Vector<T> v2)
         {
             if (typeof(T) != typeof(double)) throw new InvalidOperationException("Only double type is supported.");
             int vector1rows = v1.Length;
@@ -188,7 +188,8 @@ namespace ISAAR.MSolve.Matrices
                     matrix[i, j] = vector1[i] * vector2[j];
                 }
             }
-            return matrix as T[,];
+            Matrix2D<T> matrixResult = new Matrix2D<T>(matrix as T[,]); 
+            return matrixResult;
         }
         
         #region IVector<T> Members
