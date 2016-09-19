@@ -20,8 +20,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public double SectionArea { get; set; }
         public double MomentOfInertia { get; set; }
 
-        private double[] internalLocalForcesVector = new double[3];
-        private double[] localDisplacementVector = new double[3];
+        private Vector<double> internalLocalForcesVector;
+        private Vector<double> localDisplacementVector;
         private double cosInitial, sinInitial, lengthInitial;
         private double cosCurrent, sinCurrent, lengthCurrent;
 
@@ -170,28 +170,63 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return CalculateForces(element, localDisplacements, new double[localDisplacements.Length]);
         }
 
-        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
+        //public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
+        //{
+        //    throw new NotImplementedException();
+        //}
+        public void CalculateLocalDisplacementVector(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
-            throw new NotImplementedException();
+            double[] node1XYinitial = new double[] { element.Nodes[0].X, element.Nodes[0].Y };
+            double[] node2XYinitial = new double[] { element.Nodes[1].X, element.Nodes[1].Y };
+
+            double[] node1XYcurrent = new double[] {
+                node1XYinitial[0]+localDisplacements[0]+localdDisplacements[0],
+                node1XYinitial[1]+localDisplacements[1]+localdDisplacements[1]
+                };
+            double[] node2XYcurrent = new double[] {
+                node2XYinitial[0]+localDisplacements[3]+localdDisplacements[3],
+                node2XYinitial[1]+localDisplacements[4]+localdDisplacements[4]
+                };
+            double betaAngleInitial = Math.Atan2(node2XYinitial[1] - node1XYinitial[1], node2XYinitial[0] - node1XYinitial[0]);
+            double betaAngleCurrent = Math.Atan2(node2XYcurrent[1] - node1XYcurrent[1], node2XYcurrent[0] - node1XYcurrent[0]);
+
+            lengthCurrent = Math.Sqrt(Math.Pow((node2XYcurrent[0] - node1XYcurrent[0]), 2) + Math.Pow((node2XYcurrent[1] - node1XYcurrent[1]), 2));
+            lengthInitial = Math.Sqrt(Math.Pow((node2XYinitial[0] - node1XYinitial[0]), 2) + Math.Pow((node2XYinitial[1] - node1XYinitial[1]), 2));
+
+            Vector<double> localDisplacementVector = new Vector<double>(new double[]
+            {
+                lengthCurrent - lengthInitial,
+                (localDisplacements[2]+localdDisplacements[2]) - betaAngleCurrent + betaAngleInitial,
+                (localDisplacements[5] + localdDisplacements[5]) - betaAngleCurrent + betaAngleInitial
+            });
+            
         }
 
-        public double[] CalculateForces(Element element)
+        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
             double E = (material as ElasticMaterial).YoungModulus;
             double I = MomentOfInertia;
             double A = SectionArea;
 
-            double[,] Dmatrix = new[,]
+            
+            Matrix2D<double> Dmatrix = new Matrix2D<double>(new[,]
             {
                 { E * A / lengthInitial, 0, 0 },
                 { 0 , 4 * E * I / lengthInitial, 2 * E * I / lengthInitial },
                 { 0 , 2 * E * I / lengthInitial, 4 * E * I / lengthInitial }
-            };
-            Vector<double> localForceVec = new Vector<double>(this.internalLocalForcesVector);
-            Matrix2D<double> Dmat = new Matrix2D<double>(Dmatrix);
-            Vector<double> malakia;
-            malakia = Dmat * localForceVec;
-            return null;
+            });
+
+            Matrix2D<double> Bmatrix = new Matrix2D<double>(new[,]
+            {
+                { -cosCurrent, -sinCurrent, 0, cosCurrent, sinCurrent, 0 },
+                { -sinCurrent / lengthCurrent, cosCurrent / lengthCurrent, 1, sinCurrent / lengthCurrent, -cosCurrent / lengthCurrent, 0 },
+                { -sinCurrent / lengthCurrent, cosCurrent / lengthCurrent, 0, sinCurrent / lengthCurrent, -cosCurrent / lengthCurrent, 1 }
+            });
+            Vector<double> internalLocalForcesVector = Dmatrix * localDisplacementVector;
+            Vector<double> internalGlobalForcesVector = Bmatrix * internalLocalForcesVector;
+            double[] internalGlobalForces = internalGlobalForcesVector.Data as double[];
+           
+            return internalGlobalForces;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
