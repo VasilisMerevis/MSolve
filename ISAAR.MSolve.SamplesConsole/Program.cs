@@ -151,6 +151,10 @@ namespace ISAAR.MSolve.SamplesConsole
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
+
+            Console.WriteLine("Writing results for node 11");
+            Console.WriteLine("Dof and Values for Displacement Y");
+            Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
         
     }
