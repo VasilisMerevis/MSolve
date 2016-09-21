@@ -71,16 +71,16 @@ namespace ISAAR.MSolve.SamplesConsole
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.Y);
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.RotZ);
 
-            var element1 = new Element() { ID = 1, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element2 = new Element() { ID = 2, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element3 = new Element() { ID = 3, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element4 = new Element() { ID = 4, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element5 = new Element() { ID = 5, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element6 = new Element() { ID = 6, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element7 = new Element() { ID = 7, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element8 = new Element() { ID = 8, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element9 = new Element() { ID = 9, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element10 = new Element() { ID = 10, ElementType = new Beam2D(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element1 = new Element() { ID = 1, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element2 = new Element() { ID = 2, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element3 = new Element() { ID = 3, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element4 = new Element() { ID = 4, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element5 = new Element() { ID = 5, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element6 = new Element() { ID = 6, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element7 = new Element() { ID = 7, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element8 = new Element() { ID = 8, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element9 = new Element() { ID = 9, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element10 = new Element() { ID = 10, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
 
 
 
