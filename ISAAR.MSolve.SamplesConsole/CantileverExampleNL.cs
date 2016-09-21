@@ -14,7 +14,7 @@ using ISAAR.MSolve.Matrices;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
-    public static class CantileverExample
+    class CantileverExampleNL
     {
         public static IList<Node> CreateNodes()
         {
@@ -143,7 +143,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
 
-            Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
+            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
@@ -159,5 +159,6 @@ namespace ISAAR.MSolve.SamplesConsole
             Console.WriteLine("Dof and Values for Displacement Y");
             Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
+
     }
 }
