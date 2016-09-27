@@ -39,13 +39,6 @@ namespace ISAAR.MSolve.SamplesConsole
         {
             //SolveBuildingInNoSoilSmall();
             //CantileverExample.Cantilever2DExample();
-            //CantileverExampleNL.Cantilever2DExample();
-            Vector<double> vec1 = new Vector<double>(new double[] { 1, 2, 4, 6 });
-            Vector<double> vec2 = new Vector<double>(new double[] { 3, 4, 5 });
-            //double a = vec1.DotProduct(vec2);
-            //double a = vec1.DotProduct(vec2);
-            Vector<double> vec3 = new Vector<double>(3);
-            vec1.CopyVectorTo(vec3);
         }
         
     }
