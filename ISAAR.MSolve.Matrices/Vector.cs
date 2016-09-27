@@ -191,7 +191,32 @@ namespace ISAAR.MSolve.Matrices
             Matrix2D<T> matrixResult = new Matrix2D<T>(matrix as T[,]); 
             return matrixResult;
         }
-        
+
+        public double DotProduct(Vector<T> v)
+        {
+            if (typeof(T) != typeof(double)) throw new InvalidOperationException("Only double type is supported.");
+            double[] v1Data = data as double[];
+            double[] v2Data = v.Data as double[];
+            if (v1Data.Length != v2Data.Length) throw new InvalidOperationException("Dot Product: Not equally sized vectors");
+            double sum = 0;
+            for (int row = 0; row < v1Data.Length; row++)
+            {
+                sum = sum + v1Data[row] * v2Data[row];
+            }
+            return sum;
+        }
+
+        public void CopyVectorTo(Vector<T> v)
+        {
+            T[] v1Data = data as T[];
+            T[] v2Data = v.Data as T[];
+            if (v1Data.Length != v2Data.Length) throw new InvalidOperationException("Dot Product: Not equally sized vectors");
+            for (int row = 0; row < v1Data.Length; row++)
+            {
+                v2Data[row] = v1Data[row];
+            }
+        }
+
         #region IVector<T> Members
 
         public int Length

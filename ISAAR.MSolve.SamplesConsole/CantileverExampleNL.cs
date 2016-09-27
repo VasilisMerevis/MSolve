@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -2000000;
+            double load = -200;
             double area = 0.01;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
@@ -143,7 +143,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
 
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {

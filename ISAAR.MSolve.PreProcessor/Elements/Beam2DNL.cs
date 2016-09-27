@@ -86,12 +86,12 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private void GetCurrentGeometricalData(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
             node1XYcurrent = new double[] {
-                node1XYinitial[0]+localDisplacements[0]+localdDisplacements[0],
-                node1XYinitial[1]+localDisplacements[1]+localdDisplacements[1]
+                node1XYinitial[0]+localDisplacements[0],
+                node1XYinitial[1]+localDisplacements[1]
                 };
             node2XYcurrent = new double[] {
-                node2XYinitial[0]+localDisplacements[3]+localdDisplacements[3],
-                node2XYinitial[1]+localDisplacements[4]+localdDisplacements[4]
+                node2XYinitial[0]+localDisplacements[3],
+                node2XYinitial[1]+localDisplacements[4]
                 };
             betaAngleCurrent = Math.Atan2(node2XYcurrent[1] - node1XYcurrent[1], node2XYcurrent[0] - node1XYcurrent[0]);
 
