@@ -86,23 +86,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double x2 = Math.Pow(element.Nodes[1].X - element.Nodes[0].X, 2);
             double y2 = Math.Pow(element.Nodes[1].Y - element.Nodes[0].Y, 2);
             double L = Math.Sqrt(x2 + y2);
-            double L2 = L * L;
-            double c = (element.Nodes[1].X - element.Nodes[0].X) / L;
-            double c2 = c * c;
-            double s = (element.Nodes[1].Y - element.Nodes[0].Y) / L;
-            double s2 = s * s;
-            double dAL420 = Density * SectionArea * L / 420;
-
+            
             double totalMass = Density * SectionArea * L;
-            double totalMassOfDiagonalTerms = 2 * dAL420 * (140 * c2 + 156 * s2) + 2 * dAL420 * (140 * s2 + 156 * c2);
-            double scale = totalMass / totalMassOfDiagonalTerms;
 
-            return new SymmetricMatrix2D<double>(new double[] { dAL420*(140*c2+156*s2)*scale, 0, 0, 0, 0, 0,
-                dAL420*(140*s2+156*c2)*scale, 0, 0, 0, 0,
-                0, 0, 0, 0,
-                dAL420*(140*c2+156*s2)*scale, 0, 0,
-                dAL420*(140*s2+156*c2)*scale, 0,
-                0 });
+            return new Matrix2D<double>(new double[,]
+            {
+                { totalMass/2,0,0,0},
+                {0,totalMass/2,0,0 },
+                {0,0,totalMass/2,0 },
+                {0,0,0,totalMass/2 }
+            });
         }
 
         public IMatrix2D<double> DampingMatrix(Element element)
