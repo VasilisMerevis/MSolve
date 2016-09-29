@@ -9,7 +9,7 @@ using ISAAR.MSolve.Matrices;
 
 namespace ISAAR.MSolve.PreProcessor.Elements
 {
-    class Rod2D
+    public class Rod2D : IStructuralFiniteElement
     {
         private static readonly DOFType[] nodalDOFTypes = new DOFType[2] { DOFType.X, DOFType.Y };
         private static readonly DOFType[][] dofs = new DOFType[][] { nodalDOFTypes, nodalDOFTypes };

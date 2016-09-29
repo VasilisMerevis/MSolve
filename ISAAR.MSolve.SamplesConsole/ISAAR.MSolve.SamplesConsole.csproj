@@ -45,6 +45,7 @@
     <Compile Include="CantileverExample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TrussExample.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Logging\ISAAR.MSolve.Logging.csproj">
