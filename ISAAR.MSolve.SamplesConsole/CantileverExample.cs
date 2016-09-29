@@ -52,7 +52,6 @@ namespace ISAAR.MSolve.SamplesConsole
             double youngMod = 200e9;
             double poisson = 0.3;
             double load = -2000000;
-            double area = 0.01;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
 
