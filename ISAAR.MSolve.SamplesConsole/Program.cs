@@ -37,8 +37,9 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            //SolveBuildingInNoSoilSmall();
+            //SolveBuildingInNoSoilSmall();//
             //CantileverExample.Cantilever2DExample();
+            TrussExample.Truss2DExample();
         }
         
     }
