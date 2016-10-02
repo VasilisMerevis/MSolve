@@ -51,8 +51,8 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -200;
-            double area = 0.01;
+            double load = -20000;
+            //double area = 0.01;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
 
@@ -142,22 +142,23 @@ namespace ISAAR.MSolve.SamplesConsole
             SolverSkyline solution = new SolverSkyline(cantiModel);
 
             ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
-
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
+            NonLinearAnalyzerNewtonRaphsonNew childAnalyzer =  NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
+            childAnalyzer.StepForMatrixRebuild = 1;
+            //Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
-            childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
-                cantiModel.NodalDOFsDictionary[11][DOFType.X],
-                cantiModel.NodalDOFsDictionary[11][DOFType.Y],
-                cantiModel.NodalDOFsDictionary[11][DOFType.RotZ]});
+            //childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
+            //    cantiModel.NodalDOFsDictionary[11][DOFType.X],
+            //    cantiModel.NodalDOFsDictionary[11][DOFType.Y],
+            //    cantiModel.NodalDOFsDictionary[11][DOFType.RotZ]});
 
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            Console.WriteLine("Writing results for node 11");
-            Console.WriteLine("Dof and Values for Displacement Y");
-            Console.WriteLine(childAnalyzer.Logs[1][0]);
+            //Console.WriteLine("Writing results for node 11");
+            //Console.WriteLine("Dof and Values for Displacement Y");
+            //Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
 
     }

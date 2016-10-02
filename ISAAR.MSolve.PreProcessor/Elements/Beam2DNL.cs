@@ -27,6 +27,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private double[] node1XYinitial, node2XYinitial, node1XYcurrent, node2XYcurrent;
         private int iter = 0;
 
+        private bool isInitialized = false;
+
 
 
         public Beam2DNL(IFiniteElementMaterial material)
@@ -102,19 +104,12 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public IMatrix2D<double> StiffnessMatrix(Element element)
         {
-            //throw new Exception("Breakpoint here K");
-            iter++;
-            if (iter < 2)
+            if (! this.isInitialized)
             {
-                GetInitialGeometricData(element);
+                this.GetInitialGeometricData(element);
+                this.isInitialized = true;
             }
-            else
-            {
-                //Console.WriteLine(iter);
-            }
-            
-            //GetInitialGeometricData(element);
-
+           
             double N = internalLocalForcesVector[0];
             double M1 = internalLocalForcesVector[1];
             double M2 = internalLocalForcesVector[2];
@@ -224,17 +219,19 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public void CalculateLocalDisplacementVector(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
             this.localDisplacementVector[0] = lengthCurrent - lengthInitial;
-            this.localDisplacementVector[1] = (localDisplacements[2] + localdDisplacements[2]) - betaAngleCurrent + betaAngleInitial;
-            this.localDisplacementVector[2] = (localDisplacements[5] + localdDisplacements[5]) - betaAngleCurrent + betaAngleInitial;
+            this.localDisplacementVector[1] = (localDisplacements[2]) - betaAngleCurrent + betaAngleInitial;
+            this.localDisplacementVector[2] = (localDisplacements[5]) - betaAngleCurrent + betaAngleInitial;
         }
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
+            
             //throw new Exception("Breakpoint here F");
             double E = (material as ElasticMaterial).YoungModulus;
             double I = MomentOfInertia;
             double A = SectionArea;
 
+            
             GetCurrentGeometricalData(element, localDisplacements, localdDisplacements);
 
             
