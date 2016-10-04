@@ -26,7 +26,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private double[] node1GlobalDisplacementVector, node2GlobalDisplacementVector;
         private int iter = 0;
 
-        private int isInitialized = 0;
+        private bool isInitializedK = false;
+        private bool isInitializedF = false;
 
 
 
@@ -112,10 +113,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public IMatrix2D<double> StiffnessMatrix(Element element)
         {
             //throw new Exception("K");
-            if (this.isInitialized == 0)
+            if (this.isInitializedK == false)
             {
                 this.GetInitialGeometricData(element);
-                this.isInitialized = 1;
+                this.isInitializedK = true;
             }
             else
             {
@@ -227,15 +228,25 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
             //throw new Exception("F");
-
-            node1GlobalDisplacementVector = new double[] { localDisplacements[0] + localDeltaDisplacements[0], localDisplacements[1] + localDeltaDisplacements[1], localDisplacements[2] + localDeltaDisplacements[2] };
-            node2GlobalDisplacementVector = new double[] { localDisplacements[3] + localDeltaDisplacements[3], localDisplacements[4] + localDeltaDisplacements[4], localDisplacements[5] + localDeltaDisplacements[5] };
-            double[] totalDisplacementVector = new double[localDisplacements.Length];
-            for(int i = 0; i < localDisplacements.Length; ++i)
+            if (this.isInitializedF == false)
             {
-                totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
+                node1GlobalDisplacementVector = new double[] { 0,0,0 };
+                node2GlobalDisplacementVector = new double[] { 0,0,0 };
+                isInitializedF = true;
             }
-            
+            else
+            {
+                double[] totalDisplacementVector = new double[localDisplacements.Length];
+                for (int i = 0; i < localDisplacements.Length; ++i)
+                {
+                    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
+                }
+                node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
+                node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
+            }
+
+
+
             GetCurrentGeometricalData();
             double E = (material as ElasticMaterial).YoungModulus;
             double I = MomentOfInertia;

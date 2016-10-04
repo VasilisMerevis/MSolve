@@ -165,7 +165,7 @@ namespace ISAAR.MSolve.Analyzers
 
                 }
                 this.SaveMaterialStateAndUpdateSolution();
-                Console.WriteLine(this.displacementMap[1][28]);
+                Console.WriteLine(this.displacementMap[1][1]);
 
             }
             this.copySolutionToSubdomains();
@@ -190,7 +190,7 @@ namespace ISAAR.MSolve.Analyzers
                 totalDisplacements.Add(displacements);
                 totalDisplacements.Add(incrementalDisplacements);
 
-                Vector<double> internalRightHandSide = subdomain.GetRHSFromSolution(displacements, incrementalDisplacements) as Vector<double>;
+                Vector<double> internalRightHandSide = subdomain.GetRHSFromSolution(totalDisplacements, incrementalDisplacements) as Vector<double>;
                 this.provider.ProcessInternalRHS(subdomain, internalRightHandSide.Data, totalDisplacements.Data);
 
                 if (this.parentAnalyzer != null)

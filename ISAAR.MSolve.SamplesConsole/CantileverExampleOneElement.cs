@@ -67,23 +67,23 @@ namespace ISAAR.MSolve.SamplesConsole
             SolverSkyline solution = new SolverSkyline(cantiModel);
 
             ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
-            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
-            //childAnalyzer.StepForMatrixRebuild = 1;
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            childAnalyzer.StepForMatrixRebuild = 1;
+            //Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
-            childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
-                cantiModel.NodalDOFsDictionary[2][DOFType.X],
-                cantiModel.NodalDOFsDictionary[2][DOFType.Y],
-                cantiModel.NodalDOFsDictionary[2][DOFType.RotZ]});
+            //childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
+            //    cantiModel.NodalDOFsDictionary[2][DOFType.X],
+            //    cantiModel.NodalDOFsDictionary[2][DOFType.Y],
+            //    cantiModel.NodalDOFsDictionary[2][DOFType.RotZ]});
 
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            Console.WriteLine("Writing results for node 11");
-            Console.WriteLine("Dof and Values for Displacement Y");
-            Console.WriteLine(childAnalyzer.Logs[1][0]);
+            //Console.WriteLine("Writing results for node 11");
+            //Console.WriteLine("Dof and Values for Displacement Y");
+            //Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
 
     }
