@@ -51,8 +51,10 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -20000;
-            //double area = 0.01;
+            double load = -2000000;
+            double area = 0.01;
+            double inertia = 8.333e-6;
+            double density = 0;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
 
@@ -71,16 +73,16 @@ namespace ISAAR.MSolve.SamplesConsole
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.Y);
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.RotZ);
 
-            var element1 = new Element() { ID = 1, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element2 = new Element() { ID = 2, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element3 = new Element() { ID = 3, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element4 = new Element() { ID = 4, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element5 = new Element() { ID = 5, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element6 = new Element() { ID = 6, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element7 = new Element() { ID = 7, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element8 = new Element() { ID = 8, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element9 = new Element() { ID = 9, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element10 = new Element() { ID = 10, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element1 = new Element() { ID = 1, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element2 = new Element() { ID = 2, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element3 = new Element() { ID = 3, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element4 = new Element() { ID = 4, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element5 = new Element() { ID = 5, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element6 = new Element() { ID = 6, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element7 = new Element() { ID = 7, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element8 = new Element() { ID = 8, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element9 = new Element() { ID = 9, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element10 = new Element() { ID = 10, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
 
 
 
@@ -142,23 +144,23 @@ namespace ISAAR.MSolve.SamplesConsole
             SolverSkyline solution = new SolverSkyline(cantiModel);
 
             ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
-            NonLinearAnalyzerNewtonRaphsonNew childAnalyzer =  NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
-            childAnalyzer.StepForMatrixRebuild = 1;
-            //Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
+            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            //childAnalyzer.StepForMatrixRebuild = 1;
+            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
-            //childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
-            //    cantiModel.NodalDOFsDictionary[11][DOFType.X],
-            //    cantiModel.NodalDOFsDictionary[11][DOFType.Y],
-            //    cantiModel.NodalDOFsDictionary[11][DOFType.RotZ]});
+            childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
+                cantiModel.NodalDOFsDictionary[11][DOFType.X],
+                cantiModel.NodalDOFsDictionary[11][DOFType.Y],
+                cantiModel.NodalDOFsDictionary[11][DOFType.RotZ]});
 
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            //Console.WriteLine("Writing results for node 11");
-            //Console.WriteLine("Dof and Values for Displacement Y");
-            //Console.WriteLine(childAnalyzer.Logs[1][0]);
+            Console.WriteLine("Writing results for node 11");
+            Console.WriteLine("Dof and Values for Displacement Y");
+            Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
 
     }

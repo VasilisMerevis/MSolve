@@ -15,8 +15,8 @@ namespace ISAAR.MSolve.Analyzers
         private readonly IDictionary<int, ISolverSubdomain> subdomains;
         private readonly int increments;
         private readonly int totalDOFs;
-        private readonly int maxSteps = 120;
-        private readonly int stepsForMatrixRebuild = 500;
+        private readonly int maxSteps = 100;
+        private readonly int stepsForMatrixRebuild = 1;
         private readonly double tolerance = 1e-5;
         private double rhsNorm;
         private INonLinearParentAnalyzer parentAnalyzer = null;

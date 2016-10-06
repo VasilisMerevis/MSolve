@@ -243,6 +243,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 }
                 node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
                 node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
+                //node1GlobalDisplacementVector = new double[] { totalDisplacementVector[0], totalDisplacementVector[1], totalDisplacementVector[2] };
+                //node2GlobalDisplacementVector = new double[] { totalDisplacementVector[3], totalDisplacementVector[4], totalDisplacementVector[5] };
             }
 
 

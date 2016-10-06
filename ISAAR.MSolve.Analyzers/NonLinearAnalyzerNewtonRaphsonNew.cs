@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Matrices.Interfaces;
+using ISAAR.MSolve.Logging;
 
 namespace ISAAR.MSolve.Analyzers
 {
@@ -16,48 +17,120 @@ namespace ISAAR.MSolve.Analyzers
     /// <author>Theofilos Manitaras</author>
     public class NonLinearAnalyzerNewtonRaphsonNew : IAnalyzer
     {
-        private static readonly int MAX_ITERATIOMS = 100;
+        /// <summary>
+        /// The maximum number of iterations allowed in an incremental load step.
+        /// </summary>
+        private static readonly int MAX_ITERATIOMS = 1000;
 
+        /// <summary>
+        /// The maximum residual norm allowed, indicating that the algorithm diverges.
+        /// </summary>
         private static readonly double MAX_RESIDUAL_NORM_ALLOWED = 1.0e20;
 
+        /// <summary>
+        /// Iterations after which the coefficient matrix is rebuilt.
+        /// </summary>
         public int StepForMatrixRebuild { get; set; } = 1;
 
+        /// <summary>
+        /// The error tolerance checked for convergence.
+        /// </summary>
         public double Tolerance { get; set; } = 1.0e-5;
 
+        /// <summary>
+        /// The parent analyzer.
+        /// </summary>
         private INonLinearParentAnalyzer parentAnalyzer;
 
+        /// <summary>
+        /// The dictionary of displacements of the last equilibrium load.
+        /// </summary>
         private Dictionary<int, Vector<double>> displacementMap = new Dictionary<int, Vector<double>>();
 
+        /// <summary>
+        /// The global right hand side.
+        /// </summary>
         private Vector<double> globalRightHandSide;
 
+        /// <summary>
+        /// The dictionary of incremental displacements. The incremental displacements express the sum of all iterative
+        /// displacements for the load step.
+        /// </summary>
         private Dictionary<int, Vector<double>> incrementalDisplacementMap = new Dictionary<int, Vector<double>>();
 
+        /// <summary>
+        /// The incremental load factor of the load step.
+        /// </summary>
         private double incrementalLoadFactor;
 
+        /// <summary>
+        /// The number of incremental load steps.
+        /// </summary>
         private int increments;
 
+        /// <summary>
+        /// The dictionary of iterative displacements. The iterative displacements correspond to the last solution of the
+        /// linear system.
+        /// </summary>
         private Dictionary<int, Vector<double>> iterativeDisplacementMap = new Dictionary<int, Vector<double>>();
 
+        /// <summary>
+        /// The total load factor so far.
+        /// </summary>
         private double loadFactor;
 
+        /// <summary>
+        /// The list of incremental load factors.
+        /// </summary>
         private IList<double> loadIncrementsList;
 
+        /// <summary>
+        /// The nonlinear provider.
+        /// </summary>
         private INonLinearProvider provider;
 
+        /// <summary>
+        /// The right hand side L2 norm.
+        /// </summary>
         private double rightHandSideNorm;
 
+        /// <summary>
+        /// The dictionary of right hand sides.
+        /// </summary>
         private Dictionary<int, Vector<double>> rightHandSides = new Dictionary<int, Vector<double>>();
 
+        /// <summary>
+        /// The dictionary of the linear analyzer.
+        /// </summary>
+        private readonly Dictionary<int, LinearAnalyzerLogFactory> logFactories = new Dictionary<int, LinearAnalyzerLogFactory>();
+
+        /// <summary>
+        /// The dictionary of logs of the IAnalyzer.
+        /// </summary>
+        private readonly Dictionary<int, IAnalyzerLog[]> logs = new Dictionary<int, IAnalyzerLog[]>();
+
+        /// <summary>
+        /// The solver.
+        /// </summary>
         private ISolver solver;
 
+        /// <summary>
+        /// The dictionary of subdomains.
+        /// </summary>
         private Dictionary<int, ISolverSubdomain> subdomains;
 
+        /// <summary>
+        /// The parent analyzer.
+        /// </summary>
         public IAnalyzer ParentAnalyzer
         {
             get { return (IAnalyzer)parentAnalyzer; }
             set { parentAnalyzer = (INonLinearParentAnalyzer)value; }
         }
 
+        /// <summary>
+        /// The child analyzer. This analyzer doesn't have a child analyzer.
+        /// </summary>
         public IAnalyzer ChildAnalyzer
         {
             get { return null; }
@@ -68,9 +141,11 @@ namespace ISAAR.MSolve.Analyzers
         {
             get
             {
-                throw new NotImplementedException();
+                return this.logs;
             }
         }
+
+        public Dictionary<int, LinearAnalyzerLogFactory> LogFactories { get { return logFactories; } }
 
         /// <summary>
         /// Factory method to create an instance of <see cref="NonLinearAnalyzerNewtonRaphsonNew"/> with
@@ -132,6 +207,8 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Solve()
         {
+            InitializeLogs();
+            DateTime start = DateTime.Now;
             this.loadFactor = 0.0;
             this.initializeInternalVectors();
 
@@ -166,9 +243,10 @@ namespace ISAAR.MSolve.Analyzers
                 }
                 this.SaveMaterialStateAndUpdateSolution();
                 Console.WriteLine(this.displacementMap[1][1]);
-
             }
             this.copySolutionToSubdomains();
+            DateTime end = DateTime.Now;
+            StoreLogResults(start, end);
         }
 
 
@@ -190,7 +268,7 @@ namespace ISAAR.MSolve.Analyzers
                 totalDisplacements.Add(displacements);
                 totalDisplacements.Add(incrementalDisplacements);
 
-                Vector<double> internalRightHandSide = subdomain.GetRHSFromSolution(totalDisplacements, incrementalDisplacements) as Vector<double>;
+                Vector<double> internalRightHandSide = subdomain.GetRHSFromSolution(displacements, incrementalDisplacements) as Vector<double>;
                 this.provider.ProcessInternalRHS(subdomain, internalRightHandSide.Data, totalDisplacements.Data);
 
                 if (this.parentAnalyzer != null)
@@ -202,6 +280,7 @@ namespace ISAAR.MSolve.Analyzers
                 Vector<double> subdomainRightHandSide = subdomain.RHS as Vector<double>;
                 Vector<double> rightHandSide = this.rightHandSides[id];
                 subdomainRightHandSide.Clear();
+                subdomainRightHandSide.Add(rightHandSide);
                 subdomainRightHandSide.Multiply(this.loadFactor);
                 subdomainRightHandSide.Subtract(internalRightHandSide);
                 subdomain.SubdomainToGlobalVector(subdomainRightHandSide.Data, this.globalRightHandSide.Data);
@@ -325,6 +404,19 @@ namespace ISAAR.MSolve.Analyzers
         public void Initialize()
         {
             this.solver.Initialize();
+        }
+
+        private void InitializeLogs()
+        {
+            logs.Clear();
+            foreach (int id in logFactories.Keys) logs.Add(id, logFactories[id].CreateLogs());
+        }
+
+        private void StoreLogResults(DateTime start, DateTime end)
+        {
+            foreach (int id in logs.Keys)
+                foreach (var l in logs[id])
+                    l.StoreResults(start, end, subdomains[id].Solution);
         }
     }
 }
