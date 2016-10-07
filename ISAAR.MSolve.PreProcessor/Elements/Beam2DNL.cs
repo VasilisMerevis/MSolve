@@ -24,12 +24,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private double cosCurrent, sinCurrent, lengthCurrent, betaAngleCurrent;
         private double[] node1XYInitial, node2XYInitial, node1XYCurrent, node2XYCurrent;
         private double[] node1GlobalDisplacementVector, node2GlobalDisplacementVector;
-        private int iter = 0;
 
         private bool isInitializedK = false;
         private bool isInitializedF = false;
-
-
 
         public Beam2DNL(IFiniteElementMaterial material)
         {
@@ -112,7 +109,6 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public IMatrix2D<double> StiffnessMatrix(Element element)
         {
-            //throw new Exception("K");
             if (this.isInitializedK == false)
             {
                 this.GetInitialGeometricData(element);
@@ -227,7 +223,6 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
-            //throw new Exception("F");
             if (this.isInitializedF == false)
             {
                 node1GlobalDisplacementVector = new double[] { 0,0,0 };
@@ -236,18 +231,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             }
             else
             {
-                double[] totalDisplacementVector = new double[localDisplacements.Length];
-                for (int i = 0; i < localDisplacements.Length; ++i)
-                {
-                    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
-                }
+                //double[] totalDisplacementVector = new double[localDisplacements.Length];
+                //for (int i = 0; i < localDisplacements.Length; ++i)
+                //{
+                //    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
+                //}
                 node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
                 node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
                 //node1GlobalDisplacementVector = new double[] { totalDisplacementVector[0], totalDisplacementVector[1], totalDisplacementVector[2] };
                 //node2GlobalDisplacementVector = new double[] { totalDisplacementVector[3], totalDisplacementVector[4], totalDisplacementVector[5] };
             }
-
-
 
             GetCurrentGeometricalData();
             double E = (material as ElasticMaterial).YoungModulus;
@@ -288,7 +281,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public void SaveMaterialState()
         {
-            //do nothing
+            
         }
 
         #endregion
