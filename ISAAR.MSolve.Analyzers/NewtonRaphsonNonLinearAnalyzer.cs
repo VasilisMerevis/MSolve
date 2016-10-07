@@ -15,8 +15,8 @@ namespace ISAAR.MSolve.Analyzers
         private readonly IDictionary<int, ISolverSubdomain> subdomains;
         private readonly int increments;
         private readonly int totalDOFs;
-        private readonly int maxSteps = 100;
-        private readonly int stepsForMatrixRebuild = 1;
+        private int maxSteps;
+        private int stepsForMatrixRebuild;
         private readonly double tolerance = 1e-5;
         private double rhsNorm;
         private INonLinearParentAnalyzer parentAnalyzer = null;
@@ -39,8 +39,27 @@ namespace ISAAR.MSolve.Analyzers
             this.increments = increments;
             this.totalDOFs = totalDOFs;
             this.globalRHS = new Vector<double>(totalDOFs);
+            this.maxSteps = 1000;
+            this.stepsForMatrixRebuild = 1;
 
             InitializeInternalVectors();
+        }
+
+        public int SetMaxIterations
+        {
+            set {
+                if(value > 0) {this.maxSteps = value;}
+                else { throw new Exception("Iterations number cannot be negative or zero"); }
+                }
+        }
+
+        public int SetIterationsForMatrixRebuild
+        {
+            set
+            {
+                if (value > 0) { this.stepsForMatrixRebuild = value; }
+                else { throw new Exception("Iterations number for matrix rebuild cannot be negative or zero"); }
+            }
         }
 
         private void InitializeLogs()

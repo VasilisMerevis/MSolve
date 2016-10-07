@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using ISAAR.MSolve.PreProcessor;
 using ISAAR.MSolve.Solvers.Skyline;
 using ISAAR.MSolve.Problems;
@@ -14,7 +11,7 @@ using ISAAR.MSolve.Matrices;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
-    class CantileverExampleNL
+    static class CantileverExampleNL
     {
         public static IList<Node> CreateNodes()
         {
@@ -141,13 +138,15 @@ namespace ISAAR.MSolve.SamplesConsole
             cantiModel.Loads.Add(new Load() { Amount = load, Node = cantiModel.NodesDictionary[11], DOF = DOFType.Y });
 
             cantiModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(cantiModel);
+            SolverSkyline linearSolver = new SolverSkyline(cantiModel);
 
-            ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
-            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            ProblemStructural provider = new ProblemStructural(cantiModel, linearSolver.SubdomainsDictionary);
+            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
             //childAnalyzer.StepForMatrixRebuild = 1;
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
-            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
+            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolver.SubdomainsDictionary);
+            childAnalyzer.SetMaxIterations = 1000;
+            childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 cantiModel.NodalDOFsDictionary[11][DOFType.X],
