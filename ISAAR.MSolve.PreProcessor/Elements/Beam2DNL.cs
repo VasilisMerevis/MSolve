@@ -114,10 +114,6 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 this.GetInitialGeometricData(element);
                 this.isInitializedK = true;
             }
-            else
-            {
-                Console.WriteLine("else");
-            }
 
             double sinb = sinCurrent;
             double cosb = cosCurrent;
