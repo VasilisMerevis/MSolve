@@ -20,24 +20,28 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public double SectionArea { get; set; }
         public double MomentOfInertia { get; set; }
 
-        private Vector<double> internalLocalForcesVector = new Vector<double>(3);
-        private Vector<double> localDisplacementVector = new Vector<double>(3);
         private double cosInitial, sinInitial, lengthInitial, betaAngleInitial;
         private double cosCurrent, sinCurrent, lengthCurrent, betaAngleCurrent;
-        private double[] node1XYinitial, node2XYinitial, node1XYcurrent, node2XYcurrent;
-        private int iter = 0;
+        private double[] node1XYInitial, node2XYInitial, node1XYCurrent, node2XYCurrent;
+        private double[] node1GlobalDisplacementVector, node2GlobalDisplacementVector;
 
-
+        private bool isInitializedK = false;
+        private bool isInitializedF = false;
 
         public Beam2DNL(IFiniteElementMaterial material)
         {
             this.material = material;
+            this.node1GlobalDisplacementVector = new double[3];
+            this.node2GlobalDisplacementVector = new double[3];
+
         }
 
         public Beam2DNL(IFiniteElementMaterial material, IFiniteElementDOFEnumerator dofEnumerator)
             : this(material)
         {
             this.dofEnumerator = dofEnumerator;
+            this.node1GlobalDisplacementVector = new double[3];
+            this.node2GlobalDisplacementVector = new double[3];
         }
 
         public IFiniteElementDOFEnumerator DOFEnumerator
@@ -70,12 +74,12 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         
         private void GetInitialGeometricData(Element element)
         {
-            node1XYinitial = new double[] { element.Nodes[0].X, element.Nodes[0].Y };
-            node2XYinitial = new double[] { element.Nodes[1].X, element.Nodes[1].Y };
-            lengthInitial = Math.Sqrt(Math.Pow((node2XYinitial[0] - node1XYinitial[0]), 2) + Math.Pow((node2XYinitial[1] - node1XYinitial[1]), 2));
-            betaAngleInitial = Math.Atan2(node2XYinitial[1] - node1XYinitial[1], node2XYinitial[0] - node1XYinitial[0]);
-            cosInitial = (node2XYinitial[0] - node1XYinitial[0]) / lengthInitial;
-            sinInitial = (node2XYinitial[1] - node1XYinitial[1]) / lengthInitial;
+            node1XYInitial = new double[] { element.Nodes[0].X, element.Nodes[0].Y };
+            node2XYInitial = new double[] { element.Nodes[1].X, element.Nodes[1].Y };
+            lengthInitial = Math.Sqrt(Math.Pow(node2XYInitial[0] - node1XYInitial[0], 2) + Math.Pow(node2XYInitial[1] - node1XYInitial[1], 2));
+            betaAngleInitial = Math.Atan2(node2XYInitial[1] - node1XYInitial[1], node2XYInitial[0] - node1XYInitial[0]);
+            cosInitial = (node2XYInitial[0] - node1XYInitial[0]) / lengthInitial;
+            sinInitial = (node2XYInitial[1] - node1XYInitial[1]) / lengthInitial;
 
             lengthCurrent = lengthInitial;
             sinCurrent = sinInitial;
@@ -83,41 +87,38 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             betaAngleCurrent = betaAngleInitial;
         }
 
-        private void GetCurrentGeometricalData(Element element, double[] localDisplacements, double[] localdDisplacements)
+        private void GetCurrentGeometricalData()
         {
-            node1XYcurrent = new double[] {
-                node1XYinitial[0]+localDisplacements[0],
-                node1XYinitial[1]+localDisplacements[1]
-                };
-            node2XYcurrent = new double[] {
-                node2XYinitial[0]+localDisplacements[3],
-                node2XYinitial[1]+localDisplacements[4]
-                };
-            betaAngleCurrent = Math.Atan2(node2XYcurrent[1] - node1XYcurrent[1], node2XYcurrent[0] - node1XYcurrent[0]);
+            node1XYCurrent = new[]
+            {
+                node1XYInitial[0] + node1GlobalDisplacementVector[0],
+                node1XYInitial[1] + node1GlobalDisplacementVector[1]
+            };
 
-            lengthCurrent = Math.Sqrt(Math.Pow((node2XYcurrent[0] - node1XYcurrent[0]), 2) + Math.Pow((node2XYcurrent[1] - node1XYcurrent[1]), 2));
-            cosCurrent = (node2XYcurrent[0] - node1XYcurrent[0]) / lengthCurrent;
-            sinCurrent = (node2XYcurrent[1] - node1XYcurrent[1]) / lengthCurrent;
+            node2XYCurrent = new[]
+            {
+                node2XYInitial[0] + node2GlobalDisplacementVector[0],
+                node2XYInitial[1] + node2GlobalDisplacementVector[1]
+            };
+            betaAngleCurrent = Math.Atan2(node2XYCurrent[1] - node1XYCurrent[1], node2XYCurrent[0] - node1XYCurrent[0]);
+            
+            lengthCurrent = Math.Sqrt(Math.Pow(node2XYCurrent[0] - node1XYCurrent[0], 2) + Math.Pow(node2XYCurrent[1] - node1XYCurrent[1], 2));
+            cosCurrent = (node2XYCurrent[0] - node1XYCurrent[0]) / lengthCurrent;
+            sinCurrent = (node2XYCurrent[1] - node1XYCurrent[1]) / lengthCurrent;
         }
 
         public IMatrix2D<double> StiffnessMatrix(Element element)
         {
-            //throw new Exception("Breakpoint here K");
-            iter++;
-            if (iter < 2)
+            if (this.isInitializedK == false)
             {
-                GetInitialGeometricData(element);
+                this.GetInitialGeometricData(element);
+                this.isInitializedK = true;
             }
             else
             {
-                //Console.WriteLine(iter);
+                Console.WriteLine("else");
             }
-            
-            //GetInitialGeometricData(element);
 
-            double N = internalLocalForcesVector[0];
-            double M1 = internalLocalForcesVector[1];
-            double M2 = internalLocalForcesVector[2];
             double sinb = sinCurrent;
             double cosb = cosCurrent;
             double cosb2 = cosCurrent * cosCurrent;
@@ -129,6 +130,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double E = (material as ElasticMaterial).YoungModulus;
             double I = MomentOfInertia;
             double A = SectionArea;
+            double N = A * E * (lengthCurrent - lengthInitial) / lengthInitial;
+            double M1 = 2 * E * I * (node2GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial + 4 * E * I * (node1GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial;
+            double M2 = 4 * E * I * (node2GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial + 2 * E * I * (node1GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial;
 
             double[,] globalStiffnessMatrix = new double[6, 6];
             globalStiffnessMatrix[0, 0] = N * sinb2 / Lc + 12 * E * I * sinb2 / (L0 * Lc2) - 2 * (M2 + M1) * cosbsinb / Lc2 + A * E * cosb2 / L0;
@@ -217,47 +221,43 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return CalculateForces(element, localDisplacements, new double[localDisplacements.Length]);
         }
 
-        //public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
-        //{
-        //    throw new NotImplementedException();
-        //}
-        public void CalculateLocalDisplacementVector(Element element, double[] localDisplacements, double[] localdDisplacements)
+        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
-            this.localDisplacementVector[0] = lengthCurrent - lengthInitial;
-            this.localDisplacementVector[1] = (localDisplacements[2] + localdDisplacements[2]) - betaAngleCurrent + betaAngleInitial;
-            this.localDisplacementVector[2] = (localDisplacements[5] + localdDisplacements[5]) - betaAngleCurrent + betaAngleInitial;
-        }
+            if (this.isInitializedF == false)
+            {
+                node1GlobalDisplacementVector = new double[] { 0,0,0 };
+                node2GlobalDisplacementVector = new double[] { 0,0,0 };
+                isInitializedF = true;
+            }
+            else
+            {
+                //double[] totalDisplacementVector = new double[localDisplacements.Length];
+                //for (int i = 0; i < localDisplacements.Length; ++i)
+                //{
+                //    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
+                //}
+                node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
+                node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
+                //node1GlobalDisplacementVector = new double[] { totalDisplacementVector[0], totalDisplacementVector[1], totalDisplacementVector[2] };
+                //node2GlobalDisplacementVector = new double[] { totalDisplacementVector[3], totalDisplacementVector[4], totalDisplacementVector[5] };
+            }
 
-        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
-        {
-            //throw new Exception("Breakpoint here F");
+            GetCurrentGeometricalData();
             double E = (material as ElasticMaterial).YoungModulus;
             double I = MomentOfInertia;
             double A = SectionArea;
+            double N = A * E * (lengthCurrent - lengthInitial) / lengthInitial;
+            double M1 = 2 * E * I * (node2GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial + 4 * E * I * (node1GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial;
+            double M2 = 4 * E * I * (node2GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial + 2 * E * I * (node1GlobalDisplacementVector[2] - betaAngleCurrent + betaAngleInitial) / lengthInitial;
+            double[] intforceV = new double[6];
+            intforceV[0] = -(M2 * sinCurrent / lengthCurrent) - (M1 * sinCurrent / lengthCurrent) - N * cosCurrent;
+            intforceV[1] = (M2 * cosCurrent / lengthCurrent) + (M1 * cosCurrent / lengthCurrent) - N * sinCurrent;
+            intforceV[2] = M1;
+            intforceV[3] = (M2 * sinCurrent / lengthCurrent) + (M1 * sinCurrent / lengthCurrent) + N * cosCurrent;
+            intforceV[4] = -(M2 * cosCurrent / lengthCurrent) - (M1 * cosCurrent / lengthCurrent) + N * sinCurrent;
+            intforceV[5] = M2;
 
-            GetCurrentGeometricalData(element, localDisplacements, localdDisplacements);
-
-            
-            Matrix2D<double> Dmatrix = new Matrix2D<double>(new[,]
-            {
-                { E * A / lengthInitial, 0, 0 },
-                { 0 , 4 * E * I / lengthInitial, 2 * E * I / lengthInitial },
-                { 0 , 2 * E * I / lengthInitial, 4 * E * I / lengthInitial }
-            });
-
-            Matrix2D<double> Bmatrix = new Matrix2D<double>(new[,]
-            {
-                { -cosCurrent, -sinCurrent, 0, cosCurrent, sinCurrent, 0 },
-                { -sinCurrent / lengthCurrent, cosCurrent / lengthCurrent, 1, sinCurrent / lengthCurrent, -cosCurrent / lengthCurrent, 0 },
-                { -sinCurrent / lengthCurrent, cosCurrent / lengthCurrent, 0, sinCurrent / lengthCurrent, -cosCurrent / lengthCurrent, 1 }
-            });
-
-            CalculateLocalDisplacementVector(element, localDisplacements, localdDisplacements);
-            Vector<double> internalLocalForcesVector = Dmatrix * localDisplacementVector;
-            Vector<double> internalGlobalForcesVector = Bmatrix.Transpose() * internalLocalForcesVector;
-            double[] internalGlobalForces = internalGlobalForcesVector.Data;// as double[];
-           
-            return internalGlobalForces;
+            return intforceV;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
@@ -281,7 +281,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public void SaveMaterialState()
         {
-            //do nothing
+            
         }
 
         #endregion

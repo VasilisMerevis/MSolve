@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using ISAAR.MSolve.PreProcessor;
 using ISAAR.MSolve.Solvers.Skyline;
 using ISAAR.MSolve.Problems;
@@ -14,7 +11,7 @@ using ISAAR.MSolve.Matrices;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
-    class CantileverExampleNL
+    static class CantileverExampleNL
     {
         public static IList<Node> CreateNodes()
         {
@@ -51,8 +48,10 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -200;
+            double load = -2000000;
             double area = 0.01;
+            double inertia = 8.333e-6;
+            double density = 0;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
 
@@ -71,16 +70,16 @@ namespace ISAAR.MSolve.SamplesConsole
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.Y);
             cantiModel.NodesDictionary[1].Constraints.Add(DOFType.RotZ);
 
-            var element1 = new Element() { ID = 1, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element2 = new Element() { ID = 2, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element3 = new Element() { ID = 3, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element4 = new Element() { ID = 4, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element5 = new Element() { ID = 5, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element6 = new Element() { ID = 6, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element7 = new Element() { ID = 7, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element8 = new Element() { ID = 8, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element9 = new Element() { ID = 9, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element10 = new Element() { ID = 10, ElementType = new Beam2DNL(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element1 = new Element() { ID = 1, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element2 = new Element() { ID = 2, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element3 = new Element() { ID = 3, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element4 = new Element() { ID = 4, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element5 = new Element() { ID = 5, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element6 = new Element() { ID = 6, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element7 = new Element() { ID = 7, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element8 = new Element() { ID = 8, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element9 = new Element() { ID = 9, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
+            var element10 = new Element() { ID = 10, ElementType = new Beam2DNL(material) { Density = density, SectionArea = area, MomentOfInertia = inertia } };
 
 
 
@@ -139,12 +138,15 @@ namespace ISAAR.MSolve.SamplesConsole
             cantiModel.Loads.Add(new Load() { Amount = load, Node = cantiModel.NodesDictionary[11], DOF = DOFType.Y });
 
             cantiModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(cantiModel);
+            SolverSkyline linearSolver = new SolverSkyline(cantiModel);
 
-            ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
-
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solution, solution.SubdomainsDictionary, provider, 1000, cantiModel.TotalDOFs);
-            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
+            ProblemStructural provider = new ProblemStructural(cantiModel, linearSolver.SubdomainsDictionary);
+            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            //childAnalyzer.StepForMatrixRebuild = 1;
+            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolver.SubdomainsDictionary);
+            childAnalyzer.SetMaxIterations = 1000;
+            childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 cantiModel.NodalDOFsDictionary[11][DOFType.X],
