@@ -8,6 +8,7 @@ using System.Text;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Matrices.Interfaces;
 using ISAAR.MSolve.Logging;
+using System.Diagnostics;
 
 namespace ISAAR.MSolve.Analyzers
 {
@@ -20,7 +21,7 @@ namespace ISAAR.MSolve.Analyzers
         /// <summary>
         /// The maximum number of iterations allowed in an incremental load step.
         /// </summary>
-        private static readonly int MAX_ITERATIOMS = 1000;
+        private static readonly int MAX_ITERATIOMS = 100;
 
         /// <summary>
         /// The maximum residual norm allowed, indicating that the algorithm diverges.
@@ -233,16 +234,19 @@ namespace ISAAR.MSolve.Analyzers
                     {
                         break;
                     }
+                    Debug.WriteLine("NR {0}, iteration: {1}, error: {2}", increment, step, errorNorm);
 
                     this.SplitResidualForcesToSubdomains();
                     if (((step + 1) % this.StepForMatrixRebuild) == 0)
                     {
+                        provider.Reset();
                         this.BuildMatrices();
+                        this.solver.Initialize();
                     }
 
                 }
                 this.SaveMaterialStateAndUpdateSolution();
-                Console.WriteLine(this.displacementMap[1][1]);
+                //Console.WriteLine(this.displacementMap[1][1]);
             }
             this.copySolutionToSubdomains();
             DateTime end = DateTime.Now;
@@ -368,6 +372,7 @@ namespace ISAAR.MSolve.Analyzers
 
         private void UpdateRightHandSide()
         {
+            this.globalRightHandSide.Clear();
             foreach (var subdomain in this.subdomains.Values)
             {
                 int id = subdomain.ID;

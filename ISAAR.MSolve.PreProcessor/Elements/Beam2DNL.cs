@@ -231,15 +231,15 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             }
             else
             {
-                //double[] totalDisplacementVector = new double[localDisplacements.Length];
-                //for (int i = 0; i < localDisplacements.Length; ++i)
-                //{
-                //    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
-                //}
-                node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
-                node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
-                //node1GlobalDisplacementVector = new double[] { totalDisplacementVector[0], totalDisplacementVector[1], totalDisplacementVector[2] };
-                //node2GlobalDisplacementVector = new double[] { totalDisplacementVector[3], totalDisplacementVector[4], totalDisplacementVector[5] };
+                double[] totalDisplacementVector = new double[localDisplacements.Length];
+                for (int i = 0; i < localDisplacements.Length; ++i)
+                {
+                    totalDisplacementVector[i] = localDisplacements[i] + localDeltaDisplacements[i];
+                }
+                //node1GlobalDisplacementVector = new double[] { localDisplacements[0], localDisplacements[1], localDisplacements[2] };
+                //node2GlobalDisplacementVector = new double[] { localDisplacements[3], localDisplacements[4], localDisplacements[5] };
+                node1GlobalDisplacementVector = new double[] { totalDisplacementVector[0], totalDisplacementVector[1], totalDisplacementVector[2] };
+                node2GlobalDisplacementVector = new double[] { totalDisplacementVector[3], totalDisplacementVector[4], totalDisplacementVector[5] };
             }
 
             GetCurrentGeometricalData();

@@ -141,12 +141,12 @@ namespace ISAAR.MSolve.SamplesConsole
             SolverSkyline linearSolver = new SolverSkyline(cantiModel);
 
             ProblemStructural provider = new ProblemStructural(cantiModel, linearSolver.SubdomainsDictionary);
-            //NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
-            //childAnalyzer.StepForMatrixRebuild = 1;
-            Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            NonLinearAnalyzerNewtonRaphsonNew childAnalyzer = NonLinearAnalyzerNewtonRaphsonNew.NonLinearAnalyzerWithFixedLoadIncrements(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
+            childAnalyzer.StepForMatrixRebuild = 1;
+            //Analyzers.NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolver, linearSolver.SubdomainsDictionary, provider, 10, cantiModel.TotalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolver.SubdomainsDictionary);
-            childAnalyzer.SetMaxIterations = 1000;
-            childAnalyzer.SetIterationsForMatrixRebuild = 1;
+            //childAnalyzer.SetMaxIterations = 1000;
+            //childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 cantiModel.NodalDOFsDictionary[11][DOFType.X],
