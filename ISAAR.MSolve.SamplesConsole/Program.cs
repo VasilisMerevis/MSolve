@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //CantileverExample.Cantilever2DExample();
             CantileverExampleNL.Cantilever2DExample();
             //CantileverExampleOneElement.Cantilever2DExample();
-            
+            TrussExample.Truss2DExample();
         }
         
     }
