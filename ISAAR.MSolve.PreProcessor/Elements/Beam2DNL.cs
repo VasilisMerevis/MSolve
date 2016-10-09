@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             return element.Nodes;
         }
-        
+
         private void GetInitialGeometricData(Element element)
         {
             node1XYInitial = new double[] { element.Nodes[0].X, element.Nodes[0].Y };
@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 node2XYInitial[1] + node2GlobalDisplacementVector[1]
             };
             betaAngleCurrent = Math.Atan2(node2XYCurrent[1] - node1XYCurrent[1], node2XYCurrent[0] - node1XYCurrent[0]);
-            
+
             lengthCurrent = Math.Sqrt(Math.Pow(node2XYCurrent[0] - node1XYCurrent[0], 2) + Math.Pow(node2XYCurrent[1] - node1XYCurrent[1], 2));
             cosCurrent = (node2XYCurrent[0] - node1XYCurrent[0]) / lengthCurrent;
             sinCurrent = (node2XYCurrent[1] - node1XYCurrent[1]) / lengthCurrent;
@@ -221,8 +221,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             if (this.isInitializedF == false)
             {
-                node1GlobalDisplacementVector = new double[] { 0,0,0 };
-                node2GlobalDisplacementVector = new double[] { 0,0,0 };
+                node1GlobalDisplacementVector = new double[] { 0, 0, 0 };
+                node2GlobalDisplacementVector = new double[] { 0, 0, 0 };
                 isInitializedF = true;
             }
             else
@@ -277,7 +277,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public void SaveMaterialState()
         {
-            
+
         }
 
         #endregion
