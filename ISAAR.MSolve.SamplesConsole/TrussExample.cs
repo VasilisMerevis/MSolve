@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node1 = new Node { ID = 1, X = 0, Y = 0 };
             Node node2 = new Node { ID = 2, X = 0, Y = 40 };
             Node node3 = new Node { ID = 3, X = 40, Y = 40 };
-          
+
             nodes.Add(node1);
             nodes.Add(node2);
             nodes.Add(node3);
@@ -58,8 +58,8 @@ namespace ISAAR.MSolve.SamplesConsole
             trussModel.NodesDictionary[2].Constraints.Add(DOFType.Y);
 
 
-            var element1 = new Element() { ID = 1, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea} };
-            var element2 = new Element() { ID = 2, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea} };
+            var element1 = new Element() { ID = 1, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea } };
+            var element2 = new Element() { ID = 2, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea } };
 
             element1.AddNode(trussModel.NodesDictionary[1]);
             element1.AddNode(trussModel.NodesDictionary[3]);
