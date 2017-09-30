@@ -70,5 +70,35 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Tuple<Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = new Tuple<Dictionary<int, double>, Dictionary<int, double>>(N, dN);
             return shapeFunctions;
         }
+
+        private Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices(Dictionary<int, double> shapeFunctions, Dictionary<int, double> shapeFunctionsDerivatives)
+        {
+            double[,] A = new double[,]
+            {
+                {-shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1, 0, 0},
+                {0, -shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1, 0 },
+                {0, 0, -shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1 }
+            };
+            IMatrix2D<double> AMatrix = new Matrix2D<double>(A);
+
+            double[,] dA1 = new double[,]
+            {
+                {-shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1, 0, 0},
+                {0, -shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1, 0 },
+                {0, 0, -shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1 }
+            };
+            IMatrix2D<double> dA1Matrix = new Matrix2D<double>(dA1);
+
+            double[,] dA2 = new double[,]
+            {
+                {-shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1, 0, 0},
+                {0, -shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1, 0 },
+                {0, 0, -shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1 }
+            };
+            IMatrix2D<double> dA2Matrix = new Matrix2D<double>(dA2);
+
+            Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = new Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>>(AMatrix, dA1Matrix, dA2Matrix);
+            return positionMatrices;
+        }
     }
 }
