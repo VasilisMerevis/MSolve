@@ -100,5 +100,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = new Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>>(AMatrix, dA1Matrix, dA2Matrix);
             return positionMatrices;
         }
+
+        Tuple<double[], double[], double[,]> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
+        {
+            IVector<double> rho1 = dA1Matrix*xUpdated;
+        }
     }
 }
