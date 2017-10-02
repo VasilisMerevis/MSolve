@@ -101,9 +101,21 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return positionMatrices;
         }
 
-        Tuple<double[], double[], double[,]> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
+        Tuple<Vector<double>, Vector<double>, Matrix2D<double>> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
         {
-            IVector<double> rho1 = dA1Matrix*xUpdated;
+            
+            Vector<double> dRho1 = -1.0 * ((Matrix2D<double>)dA1Matrix * (Vector<double>)xUpdated);
+            Vector<double> dRho2 = -1.0 * ((Matrix2D<double>)dA2Matrix * (Vector<double>)xUpdated);
+
+            Matrix2D<double> metricTensor = new Matrix2D<double>(new double[,]
+                { { dRho1*dRho1, dRho1*dRho2}, {dRho2*dRho1, dRho2*dRho2 } }
+                );
+
+            double detm = metricTensor[1, 1] * metricTensor[2, 2] - metricTensor[2, 1] * metricTensor[1, 2];
+            
+
+
+            return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>>(dRho1, dRho2, metricTensor);
         }
     }
 }
