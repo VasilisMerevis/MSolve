@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Analyzers
             if (childAnalyzer == null) throw new InvalidOperationException("Static analyzer must contain an embedded analyzer.");
             InitializeInternalVectors();
             //InitializeMatrices();
-            InitializeRHSs();
+            //InitializeRHSs();
             childAnalyzer.Initialize();
         }
 

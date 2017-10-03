@@ -217,6 +217,15 @@ namespace ISAAR.MSolve.Matrices
             }
         }
 
+        public static Vector<double> CrossProductInR3(Vector<double> a, Vector<double> b)
+        {
+            if (a.Length != b.Length) throw new InvalidOperationException("Cross Product: Not equally sized vectors");
+            double[] c = new double[] { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
+            Vector<double> resultVector = new Vector<double>(c);
+            return resultVector;
+
+        }
+
         #region IVector<T> Members
 
         public int Length
