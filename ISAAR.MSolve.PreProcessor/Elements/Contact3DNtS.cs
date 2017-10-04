@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return positionMatrices;
         }
 
-        Tuple<Vector<double>, Vector<double>, Matrix2D<double>> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
+        Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
         {
             
             Vector<double> dRho1 = -1.0 * ((Matrix2D<double>)dA1Matrix * (Vector<double>)xUpdated);
@@ -111,11 +111,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 { { dRho1*dRho1, dRho1*dRho2}, {dRho2*dRho1, dRho2*dRho2 } }
                 );
 
-            double detm = metricTensor[1, 1] * metricTensor[2, 2] - metricTensor[2, 1] * metricTensor[1, 2];
-            
+            double detm = metricTensor[0, 0] * metricTensor[1, 1] - metricTensor[1, 0] * metricTensor[0, 1];
 
+            Matrix2D<double> inverseMetricTensor = new Matrix2D<double>(new double[,] {
+                { metricTensor[1,1]/detm, -metricTensor[0,1]/detm},
+                { -metricTensor[1,0]/detm, metricTensor[0,0]/detm }
+            });
 
-            return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>>(dRho1, dRho2, metricTensor);
+            Vector<double> normalVector = (1/Math.Sqrt(detm)) * Vector<double>.CrossProductInR3(dRho1, dRho2);
+
+            return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>>(dRho1, dRho2, metricTensor, normalVector);
         }
     }
 }
