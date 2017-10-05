@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return shapeFunctions;
         }
 
-        private Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices(Dictionary<int, double> shapeFunctions, Dictionary<int, double> shapeFunctionsDerivatives)
+        private Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> PositionMatrices(Dictionary<int, double> shapeFunctions, Dictionary<int, double> shapeFunctionsDerivatives)
         {
             double[,] A = new double[,]
             {
@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return positionMatrices;
         }
 
-        Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> surfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
+        private Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> SurfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
         {
             
             Vector<double> dRho1 = -1.0 * ((Matrix2D<double>)dA1Matrix * (Vector<double>)xUpdated);
@@ -121,6 +121,25 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Vector<double> normalVector = (1/Math.Sqrt(detm)) * Vector<double>.CrossProductInR3(dRho1, dRho2);
 
             return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>>(dRho1, dRho2, metricTensor, normalVector);
+        }
+
+        private Vector<double> CPP(Vector<double> xUpdated)
+        {
+            double ksi1 = 0.0;
+            double ksi2 = 0.0;
+            Tuple<Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
+            Dictionary<int,double> N = shapeFunctions.Item1;
+            Dictionary<int, double> dN = shapeFunctions.Item2;
+            Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = PositionMatrices(N, dN);
+            IMatrix2D<double> A = positionMatrices.Item1;
+            IMatrix2D<double> dA1 = positionMatrices.Item2;
+            IMatrix2D<double> dA2 = positionMatrices.Item3;
+            Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> surfaceProperties = SurfaceGeometry(dA1, dA2, xUpdated);
+            Vector<double> dRho1 = surfaceProperties.Item1;
+            Vector<double> dRho2 = surfaceProperties.Item2;
+            Matrix2D<double> m = surfaceProperties.Item3;
+            Vector<double> n = surfaceProperties.Item4;
+            
         }
     }
 }
