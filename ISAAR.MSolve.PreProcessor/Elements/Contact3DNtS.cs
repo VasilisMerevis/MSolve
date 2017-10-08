@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             this.dofEnumerator = dofEnumerator;
         }
 
-        private Tuple<Dictionary<int, double>, Dictionary<int, double>> CalculateShapeFunctions(double ksi1, double ksi2)
+        private Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> CalculateShapeFunctions(double ksi1, double ksi2)
         {
             double N1 = 1 / 4 * (1 - ksi1) * (1 - ksi2);
             double N2 = 1 / 4 * (1 + ksi1) * (1 - ksi2);
@@ -67,37 +67,61 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             dN[41] = dN41;
             dN[42] = dN42;
 
-            Tuple<Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = new Tuple<Dictionary<int, double>, Dictionary<int, double>>(N, dN);
+            double ddN112 = 1 / 4;
+            double ddN212 = -1 / 4;
+            double ddN312 = 1 / 4;
+            double ddN412 = -1 / 4;
+
+            Dictionary<int, double> ddN = new Dictionary<int, double>();
+            ddN[112] = ddN112;
+            ddN[212] = ddN212;
+            ddN[312] = ddN312;
+            ddN[412] = ddN412;
+
+            Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = new Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>>(N, dN, ddN);
             return shapeFunctions;
         }
 
-        private Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> PositionMatrices(Dictionary<int, double> shapeFunctions, Dictionary<int, double> shapeFunctionsDerivatives)
+        private Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> PositionMatrices(Dictionary<int, double> N, Dictionary<int, double> dN, Dictionary<int, double> ddN)
         {
             double[,] A = new double[,]
             {
-                {-shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1, 0, 0},
-                {0, -shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1, 0 },
-                {0, 0, -shapeFunctions[1], 0, 0, -shapeFunctions[2], 0, 0, -shapeFunctions[3], 0, 0, -shapeFunctions[4], 0, 0, 1 }
+                {-N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1, 0, 0},
+                {0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1, 0 },
+                {0, 0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1 }
             };
             IMatrix2D<double> AMatrix = new Matrix2D<double>(A);
 
             double[,] dA1 = new double[,]
             {
-                {-shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1, 0, 0},
-                {0, -shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1, 0 },
-                {0, 0, -shapeFunctionsDerivatives[11], 0, 0, -shapeFunctionsDerivatives[21], 0, 0, -shapeFunctionsDerivatives[31], 0, 0, -shapeFunctionsDerivatives[41], 0, 0, 1 }
+                {-dN[11], 0, 0, -dN[21], 0, 0, -dN[31], 0, 0, -dN[41], 0, 0, 0, 0, 0},
+                {0, -dN[11], 0, 0, -dN[21], 0, 0, -dN[31], 0, 0, -dN[41], 0, 0, 0, 0 },
+                {0, 0, -dN[11], 0, 0, -dN[21], 0, 0, -dN[31], 0, 0, -dN[41], 0, 0, 0 }
             };
             IMatrix2D<double> dA1Matrix = new Matrix2D<double>(dA1);
 
             double[,] dA2 = new double[,]
             {
-                {-shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1, 0, 0},
-                {0, -shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1, 0 },
-                {0, 0, -shapeFunctionsDerivatives[12], 0, 0, -shapeFunctionsDerivatives[22], 0, 0, -shapeFunctionsDerivatives[32], 0, 0, -shapeFunctionsDerivatives[42], 0, 0, 1 }
+                {-dN[12], 0, 0, -dN[22], 0, 0, -dN[32], 0, 0, -dN[42], 0, 0, 0, 0, 0},
+                {0, -dN[12], 0, 0, -dN[22], 0, 0, -dN[32], 0, 0, -dN[42], 0, 0, 0, 0 },
+                {0, 0, -dN[12], 0, 0, -dN[22], 0, 0, -dN[32], 0, 0, -dN[42], 0, 0, 0 }
             };
             IMatrix2D<double> dA2Matrix = new Matrix2D<double>(dA2);
 
-            Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = new Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>>(AMatrix, dA1Matrix, dA2Matrix);
+            Dictionary<int, IMatrix2D<double>> dA = new Dictionary<int, IMatrix2D<double>>();
+            dA[1] = dA1Matrix;
+            dA[2] = dA2Matrix;
+
+            double[,] dA12 = new double[,]
+            {
+                {-ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0, 0, 0},
+                {0, -ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0, 0 },
+                {0, 0, -ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0 }
+            };
+
+
+            Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = 
+                new Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>>(AMatrix, dA, dA2Matrix);
             return positionMatrices;
         }
 
@@ -123,13 +147,21 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>>(dRho1, dRho2, metricTensor, normalVector);
         }
 
+        private Vector<double> CalclulateDeltaKsi (Vector<double> xUpdated, Vector<double> dRho1, Vector<double> dRho2, Matrix2D<double> A)
+        {
+            double f1 = dRho1.DotProduct(A * xUpdated);
+            double f2 = dRho2.DotProduct(A * xUpdated);
+            Vector<double> f = new Vector<double>(new double[] { f1, f2 });
+        }
+
         private Vector<double> CPP(Vector<double> xUpdated)
         {
             double ksi1 = 0.0;
             double ksi2 = 0.0;
-            Tuple<Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
+            Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
             Dictionary<int,double> N = shapeFunctions.Item1;
             Dictionary<int, double> dN = shapeFunctions.Item2;
+            Dictionary<int, double> ddN = shapeFunctions.Item3;
             Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = PositionMatrices(N, dN);
             IMatrix2D<double> A = positionMatrices.Item1;
             IMatrix2D<double> dA1 = positionMatrices.Item2;
@@ -139,6 +171,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Vector<double> dRho2 = surfaceProperties.Item2;
             Matrix2D<double> m = surfaceProperties.Item3;
             Vector<double> n = surfaceProperties.Item4;
+            
             
         }
     }
