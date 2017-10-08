@@ -82,6 +82,13 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return shapeFunctions;
         }
 
+        /// <summary>
+        /// Returns position matrix A as well as its first and secoond order derivatives dA and ddA respectively
+        /// </summary>
+        /// <param name="N">Shape functions</param>
+        /// <param name="dN">Shape functions first order derivatives</param>
+        /// <param name="ddN">Shape functions second order derivatives</param>
+        /// <returns>Returns position matrix A as well as its first and secoond order derivatives dA and ddA respectively</returns>
         private Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> PositionMatrices(Dictionary<int, double> N, Dictionary<int, double> dN, Dictionary<int, double> ddN)
         {
             double[,] A = new double[,]
@@ -112,24 +119,33 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             dA[1] = dA1Matrix;
             dA[2] = dA2Matrix;
 
-            double[,] dA12 = new double[,]
+            double[,] ddA12 = new double[,]
             {
                 {-ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0, 0, 0},
                 {0, -ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0, 0 },
                 {0, 0, -ddN[112], 0, 0, -ddN[212], 0, 0, -ddN[312], 0, 0, -ddN[412], 0, 0, 0 }
             };
+            IMatrix2D<double> ddA12Matrix = new Matrix2D<double>(ddA12);
 
+            Dictionary<int, IMatrix2D<double>> ddA = new Dictionary<int, IMatrix2D<double>>();
+            ddA[12] = ddA12Matrix;
 
             Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = 
-                new Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>>(AMatrix, dA, dA2Matrix);
+                new Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>>(AMatrix, dA, ddA);
             return positionMatrices;
         }
 
-        private Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> SurfaceGeometry(IMatrix2D<double> dA1Matrix, IMatrix2D<double> dA2Matrix, IVector<double> xUpdated)
+        private Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> SurfaceGeometry(IVector<double> xUpdated, Dictionary<int, IMatrix2D<double>> dA, Dictionary<int, IMatrix2D<double>> ddA)
         {
-            
-            Vector<double> dRho1 = -1.0 * ((Matrix2D<double>)dA1Matrix * (Vector<double>)xUpdated);
-            Vector<double> dRho2 = -1.0 * ((Matrix2D<double>)dA2Matrix * (Vector<double>)xUpdated);
+            Vector<double> dRho1 = -1.0 * ((Matrix2D<double>)dA[1] * (Vector<double>)xUpdated);
+            Vector<double> dRho2 = -1.0 * ((Matrix2D<double>)dA[2] * (Vector<double>)xUpdated);
+            Dictionary<int, Vector<double>> dRho = new Dictionary<int, Vector<double>>();
+            dRho[1] = dRho1;
+            dRho[2] = dRho2;
+
+            Vector<double> ddRho12 = -1.0 * ((Matrix2D<double>)ddA[12] * (Vector<double>)xUpdated);
+            Dictionary<int, Vector<double>> ddRho = new Dictionary<int, Vector<double>>();
+            ddRho[12] = ddRho12;
 
             Matrix2D<double> metricTensor = new Matrix2D<double>(new double[,]
                 { { dRho1*dRho1, dRho1*dRho2}, {dRho2*dRho1, dRho2*dRho2 } }
@@ -144,14 +160,21 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
             Vector<double> normalVector = (1/Math.Sqrt(detm)) * Vector<double>.CrossProductInR3(dRho1, dRho2);
 
-            return new Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>>(dRho1, dRho2, metricTensor, normalVector);
+            return new Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double>(dRho, ddRho, normalVector, metricTensor, detm);
         }
 
-        private Vector<double> CalclulateDeltaKsi (Vector<double> xUpdated, Vector<double> dRho1, Vector<double> dRho2, Matrix2D<double> A)
+        private Vector<double> CalclulateDeltaKsi (Vector<double> xUpdated, Dictionary<int, Vector<double>> dRho, Dictionary<int, Vector<double>> ddRho, Matrix2D<double> A, Matrix2D<double> metricTensor, double detm)
         {
-            double f1 = dRho1.DotProduct(A * xUpdated);
-            double f2 = dRho2.DotProduct(A * xUpdated);
+            double f1 = dRho[1].DotProduct(A * xUpdated);
+            double f2 = dRho[2].DotProduct(A * xUpdated);
+            double e = ddRho[12].DotProduct(A * xUpdated);
             Vector<double> f = new Vector<double>(new double[] { f1, f2 });
+            double[,] matrixM = new double[,] { { metricTensor[1, 1], e - metricTensor[0, 1] }, { e - metricTensor[1, 0], metricTensor[0, 0] } };
+            Matrix2D<double> interMatrix = new Matrix2D<double>(matrixM);
+
+            double coef = 1 / (detm - Math.Pow(e, 2) + 2 * e * metricTensor[0, 1]);
+            Vector<double> deltaKsi = coef * (interMatrix * f);
+            return deltaKsi;
         }
 
         private Vector<double> CPP(Vector<double> xUpdated)
@@ -162,15 +185,17 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Dictionary<int,double> N = shapeFunctions.Item1;
             Dictionary<int, double> dN = shapeFunctions.Item2;
             Dictionary<int, double> ddN = shapeFunctions.Item3;
-            Tuple<IMatrix2D<double>, IMatrix2D<double>, IMatrix2D<double>> positionMatrices = PositionMatrices(N, dN);
+            Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = PositionMatrices(N, dN, ddN);
             IMatrix2D<double> A = positionMatrices.Item1;
-            IMatrix2D<double> dA1 = positionMatrices.Item2;
-            IMatrix2D<double> dA2 = positionMatrices.Item3;
-            Tuple<Vector<double>, Vector<double>, Matrix2D<double>, Vector<double>> surfaceProperties = SurfaceGeometry(dA1, dA2, xUpdated);
-            Vector<double> dRho1 = surfaceProperties.Item1;
-            Vector<double> dRho2 = surfaceProperties.Item2;
-            Matrix2D<double> m = surfaceProperties.Item3;
-            Vector<double> n = surfaceProperties.Item4;
+            Dictionary<int, IMatrix2D<double>> dA = positionMatrices.Item2;
+            Dictionary<int, IMatrix2D<double>> ddA = positionMatrices.Item3;
+            Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> surfaceProperties = SurfaceGeometry(xUpdated, dA, ddA);
+            Dictionary<int, Vector<double>> dRho = surfaceProperties.Item1;
+            Dictionary<int, Vector<double>> ddRho = surfaceProperties.Item2;
+            Vector<double> n = surfaceProperties.Item3;
+            Matrix2D<double> m = surfaceProperties.Item4;
+            double detm = surfaceProperties.Item5;
+            Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, m, detm);
             
             
         }
