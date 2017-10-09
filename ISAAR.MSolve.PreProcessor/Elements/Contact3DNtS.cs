@@ -181,21 +181,46 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             double ksi1 = 0.0;
             double ksi2 = 0.0;
-            Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
-            Dictionary<int,double> N = shapeFunctions.Item1;
-            Dictionary<int, double> dN = shapeFunctions.Item2;
-            Dictionary<int, double> ddN = shapeFunctions.Item3;
-            Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = PositionMatrices(N, dN, ddN);
-            IMatrix2D<double> A = positionMatrices.Item1;
-            Dictionary<int, IMatrix2D<double>> dA = positionMatrices.Item2;
-            Dictionary<int, IMatrix2D<double>> ddA = positionMatrices.Item3;
-            Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> surfaceProperties = SurfaceGeometry(xUpdated, dA, ddA);
-            Dictionary<int, Vector<double>> dRho = surfaceProperties.Item1;
-            Dictionary<int, Vector<double>> ddRho = surfaceProperties.Item2;
-            Vector<double> n = surfaceProperties.Item3;
-            Matrix2D<double> m = surfaceProperties.Item4;
-            double detm = surfaceProperties.Item5;
-            Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, m, detm);
+            Vector<double> ksiVector = new Vector<double>(new double[] { ksi1, ksi2 });
+            for (int i = 0; i < 100; i++)
+            {
+                Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
+                Dictionary<int, double> N = shapeFunctions.Item1;
+                Dictionary<int, double> dN = shapeFunctions.Item2;
+                Dictionary<int, double> ddN = shapeFunctions.Item3;
+                Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = PositionMatrices(N, dN, ddN);
+                IMatrix2D<double> A = positionMatrices.Item1;
+                Dictionary<int, IMatrix2D<double>> dA = positionMatrices.Item2;
+                Dictionary<int, IMatrix2D<double>> ddA = positionMatrices.Item3;
+                Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> surfaceProperties = SurfaceGeometry(xUpdated, dA, ddA);
+                Dictionary<int, Vector<double>> dRho = surfaceProperties.Item1;
+                Dictionary<int, Vector<double>> ddRho = surfaceProperties.Item2;
+                Vector<double> n = surfaceProperties.Item3;
+                Matrix2D<double> m = surfaceProperties.Item4;
+                double detm = surfaceProperties.Item5;
+                Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, m, detm);
+                if (deltaKsi.Norm<0.00001)
+                {
+                    break;
+                }
+                ksiVector = ksiVector.Add(deltaKsi);
+            }
+            ksiVector = ksiVector + ksiVector;
+            //Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi1, ksi2);
+            //Dictionary<int,double> N = shapeFunctions.Item1;
+            //Dictionary<int, double> dN = shapeFunctions.Item2;
+            //Dictionary<int, double> ddN = shapeFunctions.Item3;
+            //Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = PositionMatrices(N, dN, ddN);
+            //IMatrix2D<double> A = positionMatrices.Item1;
+            //Dictionary<int, IMatrix2D<double>> dA = positionMatrices.Item2;
+            //Dictionary<int, IMatrix2D<double>> ddA = positionMatrices.Item3;
+            //Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> surfaceProperties = SurfaceGeometry(xUpdated, dA, ddA);
+            //Dictionary<int, Vector<double>> dRho = surfaceProperties.Item1;
+            //Dictionary<int, Vector<double>> ddRho = surfaceProperties.Item2;
+            //Vector<double> n = surfaceProperties.Item3;
+            //Matrix2D<double> m = surfaceProperties.Item4;
+            //double detm = surfaceProperties.Item5;
+            //Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, m, detm);
             
             
         }
