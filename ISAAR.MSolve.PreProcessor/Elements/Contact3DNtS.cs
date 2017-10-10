@@ -9,7 +9,7 @@ using ISAAR.MSolve.Matrices;
 
 namespace ISAAR.MSolve.PreProcessor.Elements
 {
-    class Contact3DNtS 
+    class Contact3DNtS : IStructuralFiniteElement
     {
         private static readonly DOFType[] nodalDOFTypes = new DOFType[3] { DOFType.X, DOFType.Y, DOFType.Z };
         private static readonly DOFType[][] dofs = new DOFType[][] { nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes };
@@ -24,9 +24,15 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private bool isInitializedK = false;
         private bool isInitializedF = false;
 
+        private IMatrix2D<double> A;
+        private Dictionary<int, IMatrix2D<double>> dA;
+        private Dictionary<int, IMatrix2D<double>> ddA;
+
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
-            
+            this.material = material;
+            this.node1GlobalDisplacementVector = new double[3];
+            this.node2GlobalDisplacementVector = new double[3];
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -213,6 +219,46 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             double ksi3 = xUpdated.DotProduct(A * n);
             return ksi3;
+        }
+
+        private bool CheckContactStatus(Vector<double> xUpdated)
+        {
+            bool contactStatus;
+            Vector<double> ksi = CPP(xUpdated);
+            if (Math.Abs(ksi[0])>=1.05 && Math.Abs(ksi[1])>=1.05 )
+            {
+                Console.WriteLine("Projection point out of surface. No contact occurs");
+                contactStatus = false;
+                return contactStatus;
+            }
+            Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> shapeFunctions = CalculateShapeFunctions(ksi[0], ksi[1]);
+            Dictionary<int, double> N = shapeFunctions.Item1;
+            Dictionary<int, double> dN = shapeFunctions.Item2;
+            Dictionary<int, double> ddN = shapeFunctions.Item3;
+            Tuple<IMatrix2D<double>, Dictionary<int, IMatrix2D<double>>, Dictionary<int, IMatrix2D<double>>> positionMatrices = PositionMatrices(N, dN, ddN);
+            IMatrix2D<double> A = positionMatrices.Item1;
+            Dictionary<int, IMatrix2D<double>> dA = positionMatrices.Item2;
+            Dictionary<int, IMatrix2D<double>> ddA = positionMatrices.Item3;
+            Tuple<Dictionary<int, Vector<double>>, Dictionary<int, Vector<double>>, Vector<double>, Matrix2D<double>, double> surfaceProperties = SurfaceGeometry(xUpdated, dA, ddA);
+            Dictionary<int, Vector<double>> dRho = surfaceProperties.Item1;
+            Dictionary<int, Vector<double>> ddRho = surfaceProperties.Item2;
+            Vector<double> n = surfaceProperties.Item3;
+            Matrix2D<double> m = surfaceProperties.Item4;
+            double detm = surfaceProperties.Item5;
+            double ksi3 = Penetration((Matrix2D<double>)A, xUpdated, n);
+            if (ksi3 >= 0.0)
+            {
+                Console.WriteLine("No penetration. No contact occurs");
+                contactStatus = false;
+                return contactStatus;
+            }
+            contactStatus = true;
+            return contactStatus;
+        }
+
+        public IMatrix2D<double> StiffnessMatrix(Element element)
+        {
+
         }
     }
 }
