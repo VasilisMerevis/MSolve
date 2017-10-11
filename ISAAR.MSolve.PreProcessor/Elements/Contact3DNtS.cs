@@ -27,6 +27,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private IMatrix2D<double> A;
         private Dictionary<int, IMatrix2D<double>> dA;
         private Dictionary<int, IMatrix2D<double>> ddA;
+        private Vector<double> normalVector;
+        private double penaltyFactor;
 
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
@@ -256,9 +258,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return contactStatus;
         }
 
-        public IMatrix2D<double> StiffnessMatrix(Element element)
+        public IMatrix2D<double> StiffnessMatrix(Element element, Vector<double> xUpdated)
         {
-
+            bool activeContact = CheckContactStatus(xUpdated);
+            if (activeContact == false)
+            {
+                IMatrix2D<double> stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
+            }
+            Matrix2D<double> posA = (Matrix2D<double>)A;
+            Matrix2D<double> mainPart = (posA.Transpose()*(normalVector ^ normalVector)*posA);
+            return mainPart;
         }
     }
 }
