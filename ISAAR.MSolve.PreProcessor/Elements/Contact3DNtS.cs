@@ -43,6 +43,32 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             this.dofEnumerator = dofEnumerator;
         }
 
+        public IFiniteElementDOFEnumerator DOFEnumerator
+        {
+            get { return dofEnumerator; }
+            set { dofEnumerator = value; }
+        }
+
+        public int ID
+        {
+            get { return 1; }
+        }
+
+        public ElementDimensions ElementDimensions
+        {
+            get { return ElementDimensions.ThreeD; }
+        }
+
+        public IList<IList<DOFType>> GetElementDOFTypes(Element element)
+        {
+            return dofs;
+        }
+
+        public IList<Node> GetNodesForMatrixAssembly(Element element)
+        {
+            return element.Nodes;
+        }
+
         private Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> CalculateShapeFunctions(double ksi1, double ksi2)
         {
             double N1 = 1 / 4 * (1 - ksi1) * (1 - ksi2);
@@ -258,8 +284,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return contactStatus;
         }
 
-        public IMatrix2D<double> StiffnessMatrix(Element element, Vector<double> xUpdated)
+        public IMatrix2D<double> StiffnessMatrix(Element element)
         {
+            Vector<double> xUpdated = new Vector<double>(new double[] { 0, 0, 0 });
             bool activeContact = CheckContactStatus(xUpdated);
             if (activeContact == false)
             {
@@ -269,5 +296,91 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Matrix2D<double> mainPart = (posA.Transpose()*(normalVector ^ normalVector)*posA);
             return mainPart;
         }
+
+        public IMatrix2D<double> MassMatrix(Element element)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IMatrix2D<double> DampingMatrix(Element element)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Tuple<double[], double[]> CalculateStresses(Element element, double[] localDisplacements, double[] localdDisplacements)
+        {
+            return null;
+        }
+
+        public double[] CalculateForcesForLogging(Element element, double[] localDisplacements)
+        {
+            return CalculateForces(element, localDisplacements, new double[localDisplacements.Length]);
+        }
+
+        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
+        {
+            throw new NotImplementedException();
+        }
+
+        public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
+        {
+            Vector<double> accelerations = new Vector<double>(6);
+            IMatrix2D<double> massMatrix = MassMatrix(element);
+
+            int index = 0;
+            foreach (MassAccelerationLoad load in loads)
+                foreach (DOFType[] nodalDOFTypes in dofs)
+                    foreach (DOFType dofType in nodalDOFTypes)
+                    {
+                        if (dofType == load.DOF) accelerations[index] += load.Amount;
+                        index++;
+                    }
+
+            double[] forces = new double[15];
+            massMatrix.Multiply(accelerations, forces);
+            return forces;
+        }
+
+        public void SaveMaterialState()
+        {
+
+        }
+
+        #region IStructuralFiniteElement Members
+
+        public IFiniteElementMaterial Material
+        {
+            get { return material; }
+        }
+
+        #endregion
+
+        #region IFiniteElement Members
+
+
+        public bool MaterialModified
+        {
+            get { return material.Modified; }
+        }
+
+        public void ResetMaterialModified()
+        {
+            material.ResetModified();
+        }
+
+        #endregion
+
+        #region IFiniteElement Members
+
+        public void ClearMaterialState()
+        {
+        }
+
+        public void ClearMaterialStresses()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

@@ -267,10 +267,7 @@ namespace ISAAR.MSolve.Matrices
             sw.Close();
         }
 
-        public static explicit operator Vector<T>(void v)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         #endregion
     }
