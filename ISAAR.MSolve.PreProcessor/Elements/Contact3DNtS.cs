@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double Density { get; set; }
 
-        private double[] node1XYInitial, node2XYInitial, node1XYCurrent, node2XYCurrent;
+        
         private double[] node1GlobalDisplacementVector, node2GlobalDisplacementVector;
 
         private bool isInitializedK = false;
@@ -29,6 +29,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Dictionary<int, IMatrix2D<double>> ddA;
         private Vector<double> normalVector;
         private double penaltyFactor;
+        Vector<double> xUpdated;
 
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
@@ -67,6 +68,22 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public IList<Node> GetNodesForMatrixAssembly(Element element)
         {
             return element.Nodes;
+        }
+
+        private void GetInitialPosition(Element element)
+        {
+            double[] node1XYZInitial = new double[] { element.Nodes[0].X, element.Nodes[0].Y, element.Nodes[0].Z };
+            double[] node2XYZInitial = new double[] { element.Nodes[1].X, element.Nodes[1].Y, element.Nodes[1].Z };
+            double[] node3XYZInitial = new double[] { element.Nodes[2].X, element.Nodes[2].Y, element.Nodes[2].Z };
+            double[] node4XYZInitial = new double[] { element.Nodes[3].X, element.Nodes[3].Y, element.Nodes[3].Z };
+            double[] node5XYZInitial = new double[] { element.Nodes[4].X, element.Nodes[4].Y, element.Nodes[4].Z };
+            double[] xVector = new double[15];
+            node1XYZInitial.CopyTo(xVector, 0);
+            node2XYZInitial.CopyTo(xVector, node1XYZInitial.Length);
+            node3XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length);
+            node4XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length + node3XYZInitial.Length);
+            node5XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length + node3XYZInitial.Length + node4XYZInitial.Length);
+            xUpdated = new Vector<double>(xVector);
         }
 
         private Tuple<Dictionary<int, double>, Dictionary<int, double>, Dictionary<int, double>> CalculateShapeFunctions(double ksi1, double ksi2)
@@ -286,15 +303,23 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public IMatrix2D<double> StiffnessMatrix(Element element)
         {
-            Vector<double> xUpdated = new Vector<double>(new double[] { 0, 0, 0 });
+            IMatrix2D<double> stiffnessMatrix;
+            if (this.isInitializedK == false)
+            {
+                this.GetInitialPosition(element);
+                this.isInitializedK = true;
+            }
+
             bool activeContact = CheckContactStatus(xUpdated);
             if (activeContact == false)
             {
-                IMatrix2D<double> stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
+                stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
+                return stiffnessMatrix;
             }
             Matrix2D<double> posA = (Matrix2D<double>)A;
             Matrix2D<double> mainPart = (posA.Transpose()*(normalVector ^ normalVector)*posA);
-            return mainPart;
+            stiffnessMatrix = mainPart;
+            return stiffnessMatrix;
         }
 
         public IMatrix2D<double> MassMatrix(Element element)
