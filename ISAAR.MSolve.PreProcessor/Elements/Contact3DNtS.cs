@@ -18,8 +18,6 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double Density { get; set; }
 
-        
-        private double[] node1GlobalDisplacementVector, node2GlobalDisplacementVector;
 
         private bool isInitializedK = false;
         private bool isInitializedF = false;
@@ -29,18 +27,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Dictionary<int, IMatrix2D<double>> ddA;
         private Vector<double> normalVector;
         private double penaltyFactor;
-        Vector<double> xUpdated;
+        Vector<double> xInitial, xUpdated;
         bool contactStatus;
         Dictionary<int, double> N, dN, ddN;
         Dictionary<int, Vector<double>> dRho, ddRho;
         Matrix2D<double> metricTensor, inverseMetricTensor;
-        double detm;
+        double detm, ksi3Penetration;
 
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
             this.material = material;
-            this.node1GlobalDisplacementVector = new double[3];
-            this.node2GlobalDisplacementVector = new double[3];
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -88,7 +84,15 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             node3XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length);
             node4XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length + node3XYZInitial.Length);
             node5XYZInitial.CopyTo(xVector, node1XYZInitial.Length + node2XYZInitial.Length + node3XYZInitial.Length + node4XYZInitial.Length);
+            xInitial = new Vector<double>(xVector);
             xUpdated = new Vector<double>(xVector);
+        }
+
+        private void GetCurrentPosition(Element element, double[] displacements)
+        {
+            Vector<double> displacementVector = new Vector<double>(displacements);
+            double[] xUpdatedVetor = xInitial + displacementVector;
+            xUpdated = new Vector<double>(xUpdatedVetor);
         }
 
         private void CalculateShapeFunctions(double ksi1, double ksi2)
@@ -242,6 +246,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             PositionMatrices();
             SurfaceGeometry();
             double ksi3 = Penetration((Matrix2D<double>)A, xUpdated, normalVector);
+            ksi3Penetration = ksi3;
             if (ksi3 >= 0.0)
             {
                 Console.WriteLine("No penetration. No contact occurs");
@@ -269,6 +274,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             }
             Matrix2D<double> posA = (Matrix2D<double>)A;
             Matrix2D<double> mainPart = (posA.Transpose()*(normalVector ^ normalVector)*posA);
+            mainPart.Scale(penaltyFactor);
             stiffnessMatrix = mainPart;
             return stiffnessMatrix;
         }
@@ -295,7 +301,18 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
-            throw new NotImplementedException();
+            GetCurrentPosition(element, localDisplacements);
+            if (ksi3Penetration>=0.0)
+            {
+                double[] internalForcesVector = new double[15];
+                return internalForcesVector;
+            }
+            
+            Matrix2D<double> posA = (Matrix2D<double>)A;
+            Vector<double> AT_n = posA.Transpose() * normalVector;
+            double en_ksi3 = -penaltyFactor * ksi3Penetration;
+            Vector<double> internalForce = en_ksi3 * AT_n;
+            return internalForce.Data;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
