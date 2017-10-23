@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.SamplesConsole
             double poisson = 0.3;
             double load = -2000000;
 
-            ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngMod, PoissonRatio = poisson };
+            ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
 
             IList<Node> nodes = TwoBlocksInContactExample.CreateNodes();
 
@@ -91,85 +91,69 @@ namespace ISAAR.MSolve.SamplesConsole
             blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Y);
             blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Z);
 
-            var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element2 = new Element() { ID = 2, ElementType = new Hexa8(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
-            var element3 = new Element() { ID = 3, ElementType = new Hexa8(material) { Density = 1, SectionArea = 0.01, MomentOfInertia = 8.333e-6 } };
+            var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) };
+            var element2 = new Element() { ID = 2, ElementType = new Hexa8(material) };
+            var element3 = new Element() { ID = 3, ElementType = new Contact3DNtS(material) };
             
 
 
 
-            element1.AddNode(cantiModel.NodesDictionary[1]);
-            element1.AddNode(cantiModel.NodesDictionary[2]);
+            element1.AddNode(blocksModel.NodesDictionary[1]);
+            element1.AddNode(blocksModel.NodesDictionary[2]);
+            element1.AddNode(blocksModel.NodesDictionary[3]);
+            element1.AddNode(blocksModel.NodesDictionary[4]);
+            element1.AddNode(blocksModel.NodesDictionary[5]);
+            element1.AddNode(blocksModel.NodesDictionary[6]);
+            element1.AddNode(blocksModel.NodesDictionary[7]);
+            element1.AddNode(blocksModel.NodesDictionary[8]);
 
-            element2.AddNode(cantiModel.NodesDictionary[2]);
-            element2.AddNode(cantiModel.NodesDictionary[3]);
+            element2.AddNode(blocksModel.NodesDictionary[9]);
+            element2.AddNode(blocksModel.NodesDictionary[10]);
+            element2.AddNode(blocksModel.NodesDictionary[11]);
+            element2.AddNode(blocksModel.NodesDictionary[12]);
+            element2.AddNode(blocksModel.NodesDictionary[13]);
+            element2.AddNode(blocksModel.NodesDictionary[14]);
+            element2.AddNode(blocksModel.NodesDictionary[15]);
+            element2.AddNode(blocksModel.NodesDictionary[16]);
 
-            element3.AddNode(cantiModel.NodesDictionary[3]);
-            element3.AddNode(cantiModel.NodesDictionary[4]);
+            element3.AddNode(blocksModel.NodesDictionary[5]);
+            element3.AddNode(blocksModel.NodesDictionary[6]);
+            element3.AddNode(blocksModel.NodesDictionary[7]);
+            element3.AddNode(blocksModel.NodesDictionary[8]);
+            element3.AddNode(blocksModel.NodesDictionary[9]);
 
-            element4.AddNode(cantiModel.NodesDictionary[4]);
-            element4.AddNode(cantiModel.NodesDictionary[5]);
 
-            element5.AddNode(cantiModel.NodesDictionary[5]);
-            element5.AddNode(cantiModel.NodesDictionary[6]);
 
-            element6.AddNode(cantiModel.NodesDictionary[6]);
-            element6.AddNode(cantiModel.NodesDictionary[7]);
+            blocksModel.ElementsDictionary.Add(element1.ID, element1);
+            blocksModel.ElementsDictionary.Add(element2.ID, element2);
+            blocksModel.ElementsDictionary.Add(element3.ID, element3);
 
-            element7.AddNode(cantiModel.NodesDictionary[7]);
-            element7.AddNode(cantiModel.NodesDictionary[8]);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element1.ID, element1);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element2.ID, element2);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element3.ID, element3);
 
-            element8.AddNode(cantiModel.NodesDictionary[8]);
-            element8.AddNode(cantiModel.NodesDictionary[9]);
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[13], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[14], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[15], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[16], DOF = DOFType.Y });
 
-            element9.AddNode(cantiModel.NodesDictionary[9]);
-            element9.AddNode(cantiModel.NodesDictionary[10]);
+            blocksModel.ConnectDataStructures();
+            SolverSkyline solution = new SolverSkyline(blocksModel);
 
-            element10.AddNode(cantiModel.NodesDictionary[10]);
-            element10.AddNode(cantiModel.NodesDictionary[11]);
-
-            cantiModel.ElementsDictionary.Add(element1.ID, element1);
-            cantiModel.ElementsDictionary.Add(element2.ID, element2);
-            cantiModel.ElementsDictionary.Add(element3.ID, element3);
-            cantiModel.ElementsDictionary.Add(element4.ID, element4);
-            cantiModel.ElementsDictionary.Add(element5.ID, element5);
-            cantiModel.ElementsDictionary.Add(element6.ID, element6);
-            cantiModel.ElementsDictionary.Add(element7.ID, element7);
-            cantiModel.ElementsDictionary.Add(element8.ID, element8);
-            cantiModel.ElementsDictionary.Add(element9.ID, element9);
-            cantiModel.ElementsDictionary.Add(element10.ID, element10);
-
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element1.ID, element1);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element2.ID, element2);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element3.ID, element3);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element4.ID, element4);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element5.ID, element5);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element6.ID, element6);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element7.ID, element7);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element8.ID, element8);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element9.ID, element9);
-            cantiModel.SubdomainsDictionary[1].ElementsDictionary.Add(element10.ID, element10);
-
-            cantiModel.Loads.Add(new Load() { Amount = load, Node = cantiModel.NodesDictionary[11], DOF = DOFType.Y });
-
-            cantiModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(cantiModel);
-
-            ProblemStructural provider = new ProblemStructural(cantiModel, solution.SubdomainsDictionary);
+            ProblemStructural provider = new ProblemStructural(blocksModel, solution.SubdomainsDictionary);
 
             Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
-                cantiModel.NodalDOFsDictionary[11][DOFType.X],
-                cantiModel.NodalDOFsDictionary[11][DOFType.Y],
-                cantiModel.NodalDOFsDictionary[11][DOFType.RotZ]});
+                blocksModel.NodalDOFsDictionary[13][DOFType.X],
+                blocksModel.NodalDOFsDictionary[13][DOFType.Y] });
 
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            Console.WriteLine("Writing results for node 11");
+            Console.WriteLine("Writing results for node 13");
             Console.WriteLine("Dof and Values for Displacement Y");
             Console.WriteLine(childAnalyzer.Logs[1][0]);
         }

@@ -42,6 +42,7 @@ namespace ISAAR.MSolve.SamplesConsole
             CantileverExampleNL.Cantilever2DExample();
             //CantileverExampleOneElement.Cantilever2DExample();
             //TrussExample.Truss2DExample();
+            TwoBlocksInContactExample.Two3DBlocksInContact();
 
             //Console.WriteLine();
             //Vector<double> v1 = new Vector<double>(new double[] { 3, 4, 7 });
