@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
     public class Contact3DNtS : IStructuralFiniteElement
     {
         private static readonly DOFType[] nodalDOFTypes = new DOFType[3] { DOFType.X, DOFType.Y, DOFType.Z };
-        private static readonly DOFType[][] dofs = new DOFType[][] { nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes };
+        private static readonly DOFType[][] dofs = new DOFType[][] { nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes };
         private readonly IFiniteElementMaterial material;
         private IFiniteElementDOFEnumerator dofEnumerator = new GenericDOFEnumerator();
 

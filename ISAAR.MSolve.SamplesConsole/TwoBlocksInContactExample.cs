@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
 
-            IList<Node> nodes = TwoBlocksInContactExample.CreateNodes();
+            IList<Node> nodes = CreateNodes();
 
             Model blocksModel = new Model();
 
@@ -94,7 +94,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) };
             var element2 = new Element() { ID = 2, ElementType = new Hexa8(material) };
             var element3 = new Element() { ID = 3, ElementType = new Contact3DNtS(material) };
-            
+
 
 
 
