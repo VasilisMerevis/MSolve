@@ -98,23 +98,23 @@ namespace ISAAR.MSolve.SamplesConsole
 
 
 
-            element1.AddNode(blocksModel.NodesDictionary[1]);
-            element1.AddNode(blocksModel.NodesDictionary[2]);
-            element1.AddNode(blocksModel.NodesDictionary[3]);
             element1.AddNode(blocksModel.NodesDictionary[4]);
-            element1.AddNode(blocksModel.NodesDictionary[5]);
-            element1.AddNode(blocksModel.NodesDictionary[6]);
-            element1.AddNode(blocksModel.NodesDictionary[7]);
+            element1.AddNode(blocksModel.NodesDictionary[3]);
+            element1.AddNode(blocksModel.NodesDictionary[2]);
+            element1.AddNode(blocksModel.NodesDictionary[1]);
             element1.AddNode(blocksModel.NodesDictionary[8]);
+            element1.AddNode(blocksModel.NodesDictionary[7]);
+            element1.AddNode(blocksModel.NodesDictionary[6]);
+            element1.AddNode(blocksModel.NodesDictionary[5]);
 
-            element2.AddNode(blocksModel.NodesDictionary[9]);
-            element2.AddNode(blocksModel.NodesDictionary[10]);
-            element2.AddNode(blocksModel.NodesDictionary[11]);
             element2.AddNode(blocksModel.NodesDictionary[12]);
-            element2.AddNode(blocksModel.NodesDictionary[13]);
-            element2.AddNode(blocksModel.NodesDictionary[14]);
-            element2.AddNode(blocksModel.NodesDictionary[15]);
+            element2.AddNode(blocksModel.NodesDictionary[11]);
+            element2.AddNode(blocksModel.NodesDictionary[10]);
+            element2.AddNode(blocksModel.NodesDictionary[9]);
             element2.AddNode(blocksModel.NodesDictionary[16]);
+            element2.AddNode(blocksModel.NodesDictionary[15]);
+            element2.AddNode(blocksModel.NodesDictionary[14]);
+            element2.AddNode(blocksModel.NodesDictionary[13]);
 
             element3.AddNode(blocksModel.NodesDictionary[5]);
             element3.AddNode(blocksModel.NodesDictionary[6]);

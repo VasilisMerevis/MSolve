@@ -27,12 +27,12 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Dictionary<int, IMatrix2D<double>> ddA;
         private Vector<double> normalVector;
         private double penaltyFactor;
-        Vector<double> xInitial, xUpdated;
-        bool contactStatus;
-        Dictionary<int, double> N, dN, ddN;
-        Dictionary<int, Vector<double>> dRho, ddRho;
-        Matrix2D<double> metricTensor, inverseMetricTensor;
-        double detm, ksi3Penetration;
+        private Vector<double> xInitial, xUpdated;
+        private bool contactStatus;
+        private Dictionary<int, double> N, dN, ddN;
+        private Dictionary<int, Vector<double>> dRho, ddRho;
+        private Matrix2D<double> metricTensor, inverseMetricTensor;
+        private double detm, ksi3Penetration;
 
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
@@ -97,6 +97,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         private void CalculateShapeFunctions(double ksi1, double ksi2)
         {
+            N = new Dictionary<int, double>();
+            dN = new Dictionary<int, double>();
+            ddN = new Dictionary<int, double>();
             //Shape functions
             N[1] = 1 / 4 * (1 - ksi1) * (1 - ksi2);
             N[2] = 1 / 4 * (1 + ksi1) * (1 - ksi2);
@@ -129,6 +132,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         /// <returns>Returns position matrix A as well as its first and secoond order derivatives dA and ddA respectively</returns>
         private void PositionMatrices()
         {
+            dA = new Dictionary<int, IMatrix2D<double>>();
+            ddA = new Dictionary<int, IMatrix2D<double>>();
             //Position matrix A
             double[,] AMatrix = new double[,]
             {
@@ -169,6 +174,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         private void SurfaceGeometry()
         {
+            dRho = new Dictionary<int, Vector<double>>();
+            ddRho = new Dictionary<int, Vector<double>>();
             //Surface vectors
             dRho[1] = -1.0 * ((Matrix2D<double>)dA[1] * (Vector<double>)xUpdated);
             dRho[2] = -1.0 * ((Matrix2D<double>)dA[2] * (Vector<double>)xUpdated);
@@ -229,7 +236,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         private double Penetration(Matrix2D<double> A, Vector<double> xUpdated, Vector<double> n)
         {
-            double ksi3 = xUpdated.DotProduct(A * n);
+            double ksi3 = xUpdated.DotProduct(A.Transpose() * n);
             return ksi3;
         }
 
