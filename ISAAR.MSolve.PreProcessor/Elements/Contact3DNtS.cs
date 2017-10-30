@@ -37,6 +37,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
             this.material = material;
+            this.penaltyFactor = material.YoungModulus;
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -101,26 +102,26 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             dN = new Dictionary<int, double>();
             ddN = new Dictionary<int, double>();
             //Shape functions
-            N[1] = 1 / 4 * (1 - ksi1) * (1 - ksi2);
-            N[2] = 1 / 4 * (1 + ksi1) * (1 - ksi2);
-            N[3] = 1 / 4 * (1 + ksi1) * (1 + ksi2);
-            N[4] = 1 / 4 * (1 - ksi1) * (1 + ksi2);
+            N[1] = (1.0 / 4.0) * (1.0 - ksi1) * (1.0 - ksi2);
+            N[2] = (1.0 / 4.0) * (1.0 + ksi1) * (1.0 - ksi2);
+            N[3] = (1.0 / 4.0) * (1.0 + ksi1) * (1.0 + ksi2);
+            N[4] = (1.0 / 4.0) * (1.0 - ksi1) * (1.0 + ksi2);
 
             //First order derivatives of shape functions
-            dN[11] = -1 / 4 * (1 - ksi2);
-            dN[12] = -1 / 4 * (1 - ksi1);
-            dN[21] = 1 / 4 * (1 - ksi2);
-            dN[22] = -1 / 4 * (1 + ksi1);
-            dN[31] = 1 / 4 * (1 + ksi2);
-            dN[32] = 1 / 4 * (1 + ksi1);
-            dN[41] = -1 / 4 * (1 + ksi2);
-            dN[42] = 1 / 4 * (1 - ksi1);
+            dN[11] = -(1.0 / 4.0) * (1.0 - ksi2);
+            dN[12] = -(1.0 / 4.0) * (1.0 - ksi1);
+            dN[21] = (1.0 / 4.0) * (1.0 - ksi2);
+            dN[22] = -(1.0 / 4.0) * (1.0 + ksi1);
+            dN[31] = (1.0 / 4.0) * (1.0 + ksi2);
+            dN[32] = (1.0 / 4.0) * (1.0 + ksi1);
+            dN[41] = -(1.0 / 4.0) * (1.0 + ksi2);
+            dN[42] = (1.0 / 4.0) * (1.0 - ksi1);
 
             //Second order derivatives of shape functions
-            ddN[112] = 1 / 4;
-            ddN[212] = -1 / 4;
-            ddN[312] = 1 / 4;
-            ddN[412] = -1 / 4;
+            ddN[112] = 1.0 / 4.0;
+            ddN[212] = -1.0 / 4.0;
+            ddN[312] = 1.0 / 4.0;
+            ddN[412] = -1.0 / 4.0;
         }
 
         /// <summary>
@@ -137,9 +138,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             //Position matrix A
             double[,] AMatrix = new double[,]
             {
-                {-N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1, 0, 0},
-                {0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1, 0 },
-                {0, 0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1 }
+                {-N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1.0, 0, 0},
+                {0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1.0, 0 },
+                {0, 0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0, 1.0 }
             };
             A = new Matrix2D<double>(AMatrix);
 
@@ -208,7 +209,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double[,] matrixM = new double[,] { { metricTensor[1, 1], e - metricTensor[0, 1] }, { e - metricTensor[1, 0], metricTensor[0, 0] } };
             Matrix2D<double> interMatrix = new Matrix2D<double>(matrixM);
 
-            double coef = 1 / (detm - Math.Pow(e, 2) + 2 * e * metricTensor[0, 1]);
+            double coef = 1.0 / (detm - Math.Pow(e, 2) + 2.0 * e * metricTensor[0, 1]);
             Vector<double> deltaKsi = coef * (interMatrix * f);
             return deltaKsi;
         }

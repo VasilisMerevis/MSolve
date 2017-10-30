@@ -138,12 +138,14 @@ namespace ISAAR.MSolve.SamplesConsole
             blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[16], DOF = DOFType.Y });
 
             blocksModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(blocksModel);
+            SolverSkyline linearSolution = new SolverSkyline(blocksModel);
 
-            ProblemStructural provider = new ProblemStructural(blocksModel, solution.SubdomainsDictionary);
-
-            Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
-            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
+            ProblemStructural provider = new ProblemStructural(blocksModel, linearSolution.SubdomainsDictionary);
+            NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolution, linearSolution.SubdomainsDictionary, provider, 10, blocksModel.TotalDOFs);
+            //Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
+            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolution.SubdomainsDictionary);
+            childAnalyzer.SetMaxIterations = 1000;
+            childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 blocksModel.NodalDOFsDictionary[13][DOFType.X],
