@@ -221,13 +221,14 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Vector<double> ksiVector = new Vector<double>(new double[] { ksi1, ksi2 });
             for (int i = 0; i < 100; i++)
             {
-                CalculateShapeFunctions(ksi1, ksi2);
+                CalculateShapeFunctions(ksiVector.Data[0], ksiVector.Data[1]);
                 PositionMatrices();
                 SurfaceGeometry();
                 Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, metricTensor, detm);
+                Console.WriteLine(deltaKsi.Norm);
                 if (deltaKsi.Norm<0.00001)
                 {
-                    break;
+                    return ksiVector;
                 }
                 double[] ksi = ksiVector + deltaKsi;
                 ksiVector = new Vector<double>(ksi); 
@@ -309,6 +310,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
+            Console.WriteLine("InternalForcesCalculation");
             GetCurrentPosition(element, localDisplacements);
             if (ksi3Penetration>=0.0)
             {

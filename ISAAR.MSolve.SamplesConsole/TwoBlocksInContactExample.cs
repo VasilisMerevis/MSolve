@@ -29,10 +29,10 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node7 = new Node { ID = 7, X = 1.0, Y = 1.0, Z = 1.0 };
             Node node8 = new Node { ID = 8, X = 0.0, Y = 1.0, Z = 1.0 };
             //Block 2
-            Node node9 = new Node { ID = 9, X = 0.25, Y = 1.0, Z = 0.25 };
-            Node node10 = new Node { ID = 10, X = 0.75, Y = 1.0, Z = 0.25 };
-            Node node11 = new Node { ID = 11, X = 0.75, Y = 1.0, Z = 0.75 };
-            Node node12 = new Node { ID = 12, X = 0.25, Y = 1.0, Z = 0.75 };
+            Node node9 = new Node { ID = 9, X = 0.25, Y = 1.05, Z = 0.25 };
+            Node node10 = new Node { ID = 10, X = 0.75, Y = 1.05, Z = 0.25 };
+            Node node11 = new Node { ID = 11, X = 0.75, Y = 1.05, Z = 0.75 };
+            Node node12 = new Node { ID = 12, X = 0.25, Y = 1.05, Z = 0.75 };
             Node node13 = new Node { ID = 13, X = 0.25, Y = 1.5, Z = 0.25 };
             Node node14 = new Node { ID = 14, X = 0.75, Y = 1.5, Z = 0.25 };
             Node node15 = new Node { ID = 15, X = 0.75, Y = 1.5, Z = 0.75 };
@@ -116,10 +116,10 @@ namespace ISAAR.MSolve.SamplesConsole
             element2.AddNode(blocksModel.NodesDictionary[14]);
             element2.AddNode(blocksModel.NodesDictionary[13]);
 
-            element3.AddNode(blocksModel.NodesDictionary[5]);
-            element3.AddNode(blocksModel.NodesDictionary[6]);
-            element3.AddNode(blocksModel.NodesDictionary[7]);
             element3.AddNode(blocksModel.NodesDictionary[8]);
+            element3.AddNode(blocksModel.NodesDictionary[7]);
+            element3.AddNode(blocksModel.NodesDictionary[6]);
+            element3.AddNode(blocksModel.NodesDictionary[5]);
             element3.AddNode(blocksModel.NodesDictionary[9]);
 
 
