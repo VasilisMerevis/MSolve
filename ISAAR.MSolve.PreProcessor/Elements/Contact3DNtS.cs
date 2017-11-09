@@ -219,19 +219,29 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double ksi1 = 0.0;
             double ksi2 = 0.0;
             Vector<double> ksiVector = new Vector<double>(new double[] { ksi1, ksi2 });
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i <= 100; i++)
             {
                 CalculateShapeFunctions(ksiVector.Data[0], ksiVector.Data[1]);
                 PositionMatrices();
                 SurfaceGeometry();
                 Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, metricTensor, detm);
                 Console.WriteLine(deltaKsi.Norm);
-                if (deltaKsi.Norm<0.00001)
+                if (deltaKsi.Norm<0.01 && i<100)
                 {
                     return ksiVector;
                 }
-                double[] ksi = ksiVector + deltaKsi;
-                ksiVector = new Vector<double>(ksi); 
+                else if (i==100)
+                {
+                    
+                    throw new Exception("Contact did not converge. ");
+                    break;
+                }
+                else
+                {
+                    double[] ksi = ksiVector + deltaKsi;
+                    ksiVector = new Vector<double>(ksi);
+                }
+                 
             }
             return ksiVector;
         }
@@ -312,7 +322,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             Console.WriteLine("InternalForcesCalculation");
             GetCurrentPosition(element, localDisplacements);
-            if (ksi3Penetration>=0.0)
+            if (ksi3Penetration>0.0)
             {
                 double[] internalForcesVector = new double[15];
                 return internalForcesVector;

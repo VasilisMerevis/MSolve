@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -2000000;
+            double load = -200;
 
             ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
 
@@ -94,6 +94,9 @@ namespace ISAAR.MSolve.SamplesConsole
             var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) };
             var element2 = new Element() { ID = 2, ElementType = new Hexa8(material) };
             var element3 = new Element() { ID = 3, ElementType = new Contact3DNtS(material) };
+            var element4 = new Element() { ID = 4, ElementType = new Contact3DNtS(material) };
+            var element5 = new Element() { ID = 5, ElementType = new Contact3DNtS(material) };
+            var element6 = new Element() { ID = 6, ElementType = new Contact3DNtS(material) };
 
 
 
@@ -122,15 +125,39 @@ namespace ISAAR.MSolve.SamplesConsole
             element3.AddNode(blocksModel.NodesDictionary[5]);
             element3.AddNode(blocksModel.NodesDictionary[9]);
 
+            element4.AddNode(blocksModel.NodesDictionary[8]);
+            element4.AddNode(blocksModel.NodesDictionary[7]);
+            element4.AddNode(blocksModel.NodesDictionary[6]);
+            element4.AddNode(blocksModel.NodesDictionary[5]);
+            element4.AddNode(blocksModel.NodesDictionary[10]);
+
+            element5.AddNode(blocksModel.NodesDictionary[8]);
+            element5.AddNode(blocksModel.NodesDictionary[7]);
+            element5.AddNode(blocksModel.NodesDictionary[6]);
+            element5.AddNode(blocksModel.NodesDictionary[5]);
+            element5.AddNode(blocksModel.NodesDictionary[11]);
+
+            element6.AddNode(blocksModel.NodesDictionary[8]);
+            element6.AddNode(blocksModel.NodesDictionary[7]);
+            element6.AddNode(blocksModel.NodesDictionary[6]);
+            element6.AddNode(blocksModel.NodesDictionary[5]);
+            element6.AddNode(blocksModel.NodesDictionary[12]);
+
 
 
             blocksModel.ElementsDictionary.Add(element1.ID, element1);
             blocksModel.ElementsDictionary.Add(element2.ID, element2);
             blocksModel.ElementsDictionary.Add(element3.ID, element3);
+            blocksModel.ElementsDictionary.Add(element4.ID, element4);
+            blocksModel.ElementsDictionary.Add(element5.ID, element5);
+            blocksModel.ElementsDictionary.Add(element6.ID, element6);
 
             blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element1.ID, element1);
             blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element2.ID, element2);
             blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element3.ID, element3);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element4.ID, element4);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element5.ID, element5);
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element6.ID, element6);
 
             blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[13], DOF = DOFType.Y });
             blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[14], DOF = DOFType.Y });
@@ -144,7 +171,7 @@ namespace ISAAR.MSolve.SamplesConsole
             NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolution, linearSolution.SubdomainsDictionary, provider, 10, blocksModel.TotalDOFs);
             //Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolution.SubdomainsDictionary);
-            childAnalyzer.SetMaxIterations = 1000;
+            childAnalyzer.SetMaxIterations = 100;
             childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
