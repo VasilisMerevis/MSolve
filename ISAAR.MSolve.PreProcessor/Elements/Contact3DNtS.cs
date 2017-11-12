@@ -266,7 +266,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             SurfaceGeometry();
             double ksi3 = Penetration((Matrix2D<double>)A, xUpdated, normalVector);
             ksi3Penetration = ksi3;
-            if (ksi3 >= 0.0)
+            if (ksi3 > 0.0)
             {
                 Console.WriteLine("No penetration. No contact occurs");
                 contactStatus = false;
