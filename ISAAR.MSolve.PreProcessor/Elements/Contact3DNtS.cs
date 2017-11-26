@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
             this.material = material;
-            this.penaltyFactor = material.YoungModulus;
+            this.penaltyFactor = material.YoungModulus*100.0;
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)

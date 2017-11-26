@@ -11,6 +11,7 @@ using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.PreProcessor.Materials;
 using ISAAR.MSolve.PreProcessor.Elements;
 using ISAAR.MSolve.Matrices;
+using System.IO;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -29,10 +30,10 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node7 = new Node { ID = 7, X = 1.0, Y = 1.0, Z = 1.0 };
             Node node8 = new Node { ID = 8, X = 0.0, Y = 1.0, Z = 1.0 };
             //Block 2
-            Node node9 = new Node { ID = 9, X = 0.25, Y = 0.9, Z = 0.25 };
-            Node node10 = new Node { ID = 10, X = 0.75, Y = 0.9, Z = 0.25 };
-            Node node11 = new Node { ID = 11, X = 0.75, Y = 0.9, Z = 0.75 };
-            Node node12 = new Node { ID = 12, X = 0.25, Y = 0.9, Z = 0.75 };
+            Node node9 = new Node { ID = 9, X = 0.25, Y = 1.0, Z = 0.25 };
+            Node node10 = new Node { ID = 10, X = 0.75, Y = 1.0, Z = 0.25 };
+            Node node11 = new Node { ID = 11, X = 0.75, Y = 1.0, Z = 0.75 };
+            Node node12 = new Node { ID = 12, X = 0.25, Y = 1.0, Z = 0.75 };
             Node node13 = new Node { ID = 13, X = 0.25, Y = 1.5, Z = 0.25 };
             Node node14 = new Node { ID = 14, X = 0.75, Y = 1.5, Z = 0.25 };
             Node node15 = new Node { ID = 15, X = 0.75, Y = 1.5, Z = 0.75 };
@@ -175,11 +176,24 @@ namespace ISAAR.MSolve.SamplesConsole
             childAnalyzer.SetIterationsForMatrixRebuild = 1;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
-                blocksModel.NodalDOFsDictionary[9][DOFType.Y],
-                blocksModel.NodalDOFsDictionary[11][DOFType.Y] });
+                blocksModel.NodalDOFsDictionary[13][DOFType.Y],
+                blocksModel.NodalDOFsDictionary[15][DOFType.Y] });
 
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
+
+            linearSolution.SubdomainsDictionary[1].Matrix.WriteToFile(@"c:\ESD\matrix");
+            var lines = new List<string>();
+            for (int i = 0; i < linearSolution.SubdomainsDictionary[1].Matrix.Rows; i++)
+            {
+                var line = String.Empty;
+                for (int j = 0; j < linearSolution.SubdomainsDictionary[1].Matrix.Columns; j++)
+                    line += linearSolution.SubdomainsDictionary[1].Matrix[i, j].ToString() + " ";
+                line += "\n";
+                lines.Add(line);
+            }
+            File.WriteAllLines(@"c:\ESD\matrix", lines);
+
             parentAnalyzer.Solve();
 
             Console.WriteLine("Writing results for nodes 9 & 11");
