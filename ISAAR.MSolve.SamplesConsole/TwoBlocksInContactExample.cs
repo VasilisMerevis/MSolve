@@ -25,10 +25,10 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node2 = new Node { ID = 2, X = 1.0, Y = 0.0, Z = 0.0 };
             Node node3 = new Node { ID = 3, X = 1.0, Y = 0.0, Z = 1.0 };
             Node node4 = new Node { ID = 4, X = 0.0, Y = 0.0, Z = 1.0 };
-            Node node5 = new Node { ID = 5, X = 0.0, Y = 1.0, Z = 0.0 };
-            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.0, Z = 0.0 };
-            Node node7 = new Node { ID = 7, X = 1.0, Y = 1.0, Z = 1.0 };
-            Node node8 = new Node { ID = 8, X = 0.0, Y = 1.0, Z = 1.0 };
+            Node node5 = new Node { ID = 5, X = 0.0, Y = 1.001, Z = 0.0 };
+            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.001, Z = 0.0 };
+            Node node7 = new Node { ID = 7, X = 1.0, Y = 1.001, Z = 1.0 };
+            Node node8 = new Node { ID = 8, X = 0.0, Y = 1.001, Z = 1.0 };
             //Block 2
             Node node9 = new Node { ID = 9, X = 0.25, Y = 1.0, Z = 0.25 };
             Node node10 = new Node { ID = 10, X = 0.75, Y = 1.0, Z = 0.25 };
@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -200;
+            double load = -200000000;
 
             ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
 
@@ -91,6 +91,34 @@ namespace ISAAR.MSolve.SamplesConsole
             blocksModel.NodesDictionary[4].Constraints.Add(DOFType.X);
             blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Y);
             blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Z);
+
+            blocksModel.NodesDictionary[5].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[5].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[6].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[6].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[7].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[7].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[8].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[8].Constraints.Add(DOFType.Z);
+
+            blocksModel.NodesDictionary[9].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[9].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[10].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[10].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[11].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[11].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[12].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[12].Constraints.Add(DOFType.Z);
+
+            blocksModel.NodesDictionary[13].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[13].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[14].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[14].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[15].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[15].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[16].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[16].Constraints.Add(DOFType.Z);
+
 
             var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) };
             var element2 = new Element() { ID = 2, ElementType = new Hexa8(material) };

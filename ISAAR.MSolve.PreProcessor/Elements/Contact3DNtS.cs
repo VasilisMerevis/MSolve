@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
             this.material = material;
-            this.penaltyFactor = material.YoungModulus*100.0;
+            this.penaltyFactor = material.YoungModulus * 100000.0;
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -225,7 +225,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 PositionMatrices();
                 SurfaceGeometry();
                 Vector<double> deltaKsi = CalclulateDeltaKsi(xUpdated, dRho, ddRho, (Matrix2D<double>)A, metricTensor, detm);
-                Console.WriteLine(deltaKsi.Norm);
+                //Console.WriteLine(deltaKsi.Norm);
                 if (deltaKsi.Norm<0.01 && i<100)
                 {
                     return ksiVector;
@@ -273,6 +273,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 return contactStatus;
             }
             contactStatus = true;
+            Console.WriteLine("Contact detected");
             return contactStatus;
         }
 
@@ -320,17 +321,26 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localDeltaDisplacements)
         {
-            Console.WriteLine("InternalForcesCalculation");
+            //Console.WriteLine("InternalForcesCalculation");
             GetCurrentPosition(element, localDisplacements);
+            bool activeContact = CheckContactStatus(xUpdated);
+            Console.WriteLine("Displacement of master node 1 is: {0}", localDisplacements[1]);
+            Console.WriteLine("Displacement of master node 2 is: {0}", localDisplacements[4]);
+            Console.WriteLine("Displacement of master node 3 is: {0}", localDisplacements[7]);
+            Console.WriteLine("Displacement of master node 4 is: {0}", localDisplacements[10]);
+            Console.WriteLine("Displacement of slave node is: {0}", localDisplacements[13]);
+            Console.WriteLine("Penetration is: {0}", ksi3Penetration);
+
             if (ksi3Penetration>0.0)
             {
                 double[] internalForcesVector = new double[15];
                 return internalForcesVector;
             }
+            //Console.WriteLine(ksi3Penetration);
             
             Matrix2D<double> posA = (Matrix2D<double>)A;
             Vector<double> AT_n = posA.Transpose() * normalVector;
-            double en_ksi3 = -penaltyFactor * ksi3Penetration;
+            double en_ksi3 = penaltyFactor * ksi3Penetration;
             Vector<double> internalForce = en_ksi3 * AT_n;
             return internalForce.Data;
         }
