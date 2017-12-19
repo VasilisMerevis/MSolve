@@ -17,6 +17,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private IFiniteElementDOFEnumerator dofEnumerator = new GenericDOFEnumerator();
 
         public double Density { get; set; }
+        public bool RotationalStiffness { get; set; }
 
 
         private bool isInitializedK = false;
@@ -38,6 +39,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             this.material = material;
             this.penaltyFactor = material.YoungModulus * 100000.0;
+            RotationalStiffness = true;
         }
 
         public Contact3DNtS(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -292,9 +294,28 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
                 return stiffnessMatrix;
             }
+
             Matrix2D<double> posA = (Matrix2D<double>)A;
             Matrix2D<double> mainPart = (posA.Transpose()*(normalVector ^ normalVector)*posA);
             mainPart.Scale(penaltyFactor);
+            if (RotationalStiffness==true)
+            {
+                Matrix2D<double> posdA1 = (Matrix2D<double>)dA[1];
+                Matrix2D<double> posdA2 = (Matrix2D<double>)dA[2];
+                Matrix2D<double> part1 = (posdA1.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA1);
+                Matrix2D<double> part2 = (posdA1.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA2);
+                Matrix2D<double> part3 = (posdA2.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA1);
+                Matrix2D<double> part4 = (posdA2.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA2);
+
+                part1.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 0]);
+                part2.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 0]);
+                part3.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 1]);
+                part4.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 1]);
+                Matrix2D<double> rotationalPart = part1 + part2 + part3 + part4;
+                stiffnessMatrix = mainPart + rotationalPart;
+                return stiffnessMatrix;
+            }
+                
             stiffnessMatrix = mainPart;
             return stiffnessMatrix;
         }

@@ -172,6 +172,22 @@ namespace ISAAR.MSolve.Matrices
             return new Vector<double>(c);
         }
 
+        public static Matrix2D<double> operator +(Matrix2D<T> A, Matrix2D<double> B)
+        {
+            if (!(typeof(T) == typeof(double))) throw new InvalidOperationException("Cannot add types other than double");
+            if (A.Columns != B.Columns || A.Rows != B.Rows) throw new InvalidOperationException("Matrix sizes mismatch.");
+
+            double[,] c = new double[A.Rows, A.Columns];
+            double[,] Amatrix = A.Data as double[,];
+            double[,] Bmatrix = B.Data as double[,];
+
+            for (int i = 0; i < A.Rows; i++)
+                for (int j = 0; j < A.Columns; j++)
+                    c[i, j] = Amatrix[i, j] + Bmatrix[i, j];
+            
+            return new Matrix2D<double>(c);
+        }
+
         public void SVD(double[] w, double[,] v)
         {
             //      double precision a(nm,n),w(n),u(nm,n),v(nm,n),rv1(n)
