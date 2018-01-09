@@ -37,9 +37,18 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            //SolveBuildingInNoSoilSmall();//
+            //SolveBuildingInNoSoilSmall();
             //CantileverExample.Cantilever2DExample();
-            TrussExample.Truss2DExample();
+            //CantileverExampleNL.Cantilever2DExample();
+            //CantileverExampleOneElement.Cantilever2DExample();
+            //TrussExample.Truss2DExample();
+            TwoBlocksInContactExample.Two3DBlocksInContact();
+
+            //Console.WriteLine();
+            //Vector<double> v1 = new Vector<double>(new double[] { 3, 4, 7 });
+            //Vector<double> v2 = new Vector<double>(new double[] { 2, 8, 1 });
+            //Vector<double> v3 = Vector<double>.CrossProductInR3(v1, v2);
+            
         }
         
     }

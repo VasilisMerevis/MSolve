@@ -99,6 +99,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CentralDifferencesDynamicAnalyzer.cs" />
+    <Compile Include="NonLinearAnalyzerNewtonRaphsonNew.cs" />
     <Compile Include="VRFMonteCarloAnalyzerWithStochasticMaterial.cs" />
     <Compile Include="PolynomialChaosAnalyzer.cs" />
     <Compile Include="PolynomialChaosSolverPCGMatrixCalculator.cs" />
