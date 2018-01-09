@@ -31,9 +31,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Vector<double> xInitial, xUpdated;
         private bool contactStatus;
         private Dictionary<int, double> N, dN, ddN;
-        private Dictionary<int, Vector<double>> dRho, ddRho;
+        private Dictionary<int, Vector<double>> dRho, ddRho, dRhoPrevious;
         private Matrix2D<double> metricTensor, inverseMetricTensor;
         private double detm, ksi3Penetration;
+        private Vector<double> Tr, TrPrevious;
 
         public Contact3DNtSFr(IFiniteElementMaterial3D material)
         {
@@ -252,6 +253,18 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             double ksi3 = xUpdated.DotProduct(A.Transpose() * n);
             return ksi3;
+        }
+
+        private Vector<double> CalculateCurrentTangentialTraction()
+        {
+            double[] tangentialTraction = new double[2];
+            double b1 = dRhoPrevious[1] * dRho[1];
+            double b2 = dRhoPrevious[2] * dRho[1];
+            double c1 = dRhoPrevious[1] * dRho[2];
+            double c2 = dRhoPrevious[2] * dRho[2];
+            double[,] m = metricTensor.Data;
+            tangentialTraction[0] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * b1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * b2;
+            tangentialTraction[1] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * c1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * c2;
         }
 
         private bool CheckContactStatus(Vector<double> xUpdated)
