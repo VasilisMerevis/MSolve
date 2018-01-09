@@ -93,6 +93,7 @@
     <Compile Include="Cluster.cs" />
     <Compile Include="Elements\Beam2DNL.cs" />
     <Compile Include="Elements\Contact3DNtS.cs" />
+    <Compile Include="Elements\Contact3DNtSFr.cs" />
     <Compile Include="Elements\Hexa8u8pWithStochasticMaterial.cs" />
     <Compile Include="Elements\Rod2D.cs" />
     <Compile Include="Interfaces\IMassAccelerationHistoryLoad.cs" />
