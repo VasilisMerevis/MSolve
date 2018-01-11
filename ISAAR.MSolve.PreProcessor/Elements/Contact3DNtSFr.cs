@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Dictionary<int, IMatrix2D<double>> dA;
         private Dictionary<int, IMatrix2D<double>> ddA;
         private Vector<double> normalVector;
-        private double penaltyFactor;
+        private double penaltyFactor, tangentPenaltyFactor;
         private Vector<double> xInitial, xUpdated;
         private bool contactStatus;
         private Dictionary<int, double> N, dN, ddN;
@@ -35,6 +35,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Matrix2D<double> metricTensor, inverseMetricTensor;
         private double detm, ksi3Penetration;
         private Vector<double> Tr, TrPrevious;
+        private Vector<double> rho, rhoPrevious;
 
         public Contact3DNtSFr(IFiniteElementMaterial3D material)
         {
@@ -255,7 +256,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return ksi3;
         }
 
-        private Vector<double> CalculateCurrentTangentialTraction()
+        private Vector<double> CalculateCurrentTangentialTraction(double[] displacementVector)
         {
             double[] tangentialTraction = new double[2];
             double b1 = dRhoPrevious[1] * dRho[1];
@@ -263,8 +264,36 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double c1 = dRhoPrevious[1] * dRho[2];
             double c2 = dRhoPrevious[2] * dRho[2];
             double[,] m = metricTensor.Data;
-            tangentialTraction[0] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * b1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * b2;
-            tangentialTraction[1] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * c1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * c2;
+           
+            double[,] ArMatrix = new double[,]
+            {
+                {-N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0, 0},
+                {0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4], 0},
+                {0, 0, -N[1], 0, 0, -N[2], 0, 0, -N[3], 0, 0, -N[4]}
+            };
+            Matrix2D<double> Ar = new Matrix2D<double>(ArMatrix);
+            double[] masterDisplacementVector = new double[12];
+            double[] projectionPointCoordinatesVector = new double[12];
+            for (int i = 0; i < masterDisplacementVector.Length; i++)
+            {
+                masterDisplacementVector[i] = displacementVector[i];
+                projectionPointCoordinatesVector[i] = xUpdated[i];
+            }
+            Vector<double> u = new Vector<double>(masterDisplacementVector);
+            Vector<double> xcUpdated = new Vector<double>(projectionPointCoordinatesVector);
+            rhoPrevious = rho;
+            rho = Ar * xcUpdated;
+            
+            Vector<double> rhoPrevius_plus_u = new Vector<double>(rhoPrevious + u);
+            Vector<double> deltaRho = new Vector<double>(rho - rhoPrevius_plus_u);
+
+            double d1 = deltaRho * dRho[1];
+            double d2 = deltaRho * dRho[2];
+            double et = tangentPenaltyFactor;
+            tangentialTraction[0] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * b1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * b2 - (et * d1);
+            tangentialTraction[1] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * c1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * c2 - (et * d2);
+            Vector<double> Tr = new Vector<double>(tangentialTraction);
+            return Tr;
         }
 
         private bool CheckContactStatus(Vector<double> xUpdated)
