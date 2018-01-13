@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Dictionary<int, double> N, dN, ddN;
         private Dictionary<int, Vector<double>> dRho, ddRho, dRhoPrevious;
         private Matrix2D<double> metricTensor, inverseMetricTensor;
-        private double detm, ksi3Penetration;
+        private double detm, ksi3Penetration, frictionCoef;
         private Vector<double> Tr, TrPrevious;
         private Vector<double> rho, rhoPrevious;
 
@@ -294,6 +294,16 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             tangentialTraction[1] = (TrPrevious[0] * m[0, 0] + TrPrevious[1] * m[1, 0]) * c1 + (TrPrevious[0] * m[0, 1] + TrPrevious[1] * m[1, 1]) * c2 - (et * d2);
             Vector<double> Tr = new Vector<double>(tangentialTraction);
             return Tr;
+        }
+
+        private double CalculateCoulombFriction()
+        {
+            double phi;
+            double normalForce = penaltyFactor * ksi3Penetration;
+            double[,] m = metricTensor.Data;
+            double sqRoot = Tr[0] * Tr[0] * m[0, 0] + Tr[0] * Tr[1] * m[1, 2] + Tr[1] * Tr[0] * m[1, 0] + Tr[1] * Tr[1] * m[1, 1];
+            phi = Math.Sqrt(sqRoot) - (frictionCoef * normalForce);
+            return phi;
         }
 
         private bool CheckContactStatus(Vector<double> xUpdated)
