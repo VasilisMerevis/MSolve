@@ -368,38 +368,69 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 return stiffnessMatrix;
             }
 
-
-            //Sticking case
-            Matrix2D<double> stickTangentialPart;
-            Matrix2D<double> K2Sa;
-            Matrix2D<double> K2Sb;
-            Matrix2D<double> stickPart1 = new Matrix2D<double>(new double[15, 15]);
-            Matrix2D<double> stickPart2 = new Matrix2D<double>(new double[15, 15]);
-            for (int i = 0; i < 2; i++)
+            Matrix2D<double> Apos = (Matrix2D<double>)A;
+            
+            if (true)
             {
-                for (int j = 0; j < 2; j++)
+                //Sticking case
+                Matrix2D<double> stickTangentialPart;
+                Matrix2D<double> K2Sa;
+                Matrix2D<double> K2Sb;
+                Matrix2D<double> stickPart1 = new Matrix2D<double>(new double[15, 15]);
+                Matrix2D<double> stickPart2 = new Matrix2D<double>(new double[15, 15]);
+                for (int i = 0; i < 2; i++)
                 {
-                    Matrix2D<double> Apos = (Matrix2D<double>)A;
-                    Matrix2D<double> K1S = Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos;
-                    K1S.Scale(metricTensor[i, j]);
-                    stickPart1 = stickPart1 + K1S; 
-                    for (int k = 0; k < 2; k++)
+                    for (int j = 0; j < 2; j++)
                     {
-                        for (int l = 0; l < 2; l++)
+                        
+                        Matrix2D<double> K1S = Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos;
+                        K1S.Scale(metricTensor[i, j]);
+                        stickPart1 = stickPart1 + K1S;
+                        for (int k = 0; k < 2; k++)
                         {
-                            Matrix2D<double> dApos = (Matrix2D<double>)dA[j];
-                            
-                            K2Sa = (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j]);
-                            K2Sa.Scale(Tr[i] * metricTensor[i, l] * metricTensor[j, k]);
-                            K2Sb = (dApos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)A);
-                            K2Sb.Scale(Tr[i] * metricTensor[i, k] * metricTensor[j, l]);
-                            stickPart2 = stickPart2 + K2Sa + K2Sb;
+                            for (int l = 0; l < 2; l++)
+                            {
+                                Matrix2D<double> dApos = (Matrix2D<double>)dA[j];
+
+                                K2Sa = (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j]);
+                                K2Sa.Scale(Tr[i] * metricTensor[i, l] * metricTensor[j, k]);
+                                K2Sb = (dApos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)A);
+                                K2Sb.Scale(Tr[i] * metricTensor[i, k] * metricTensor[j, l]);
+                                stickPart2 = stickPart2 + K2Sa + K2Sb;
+                            }
                         }
                     }
                 }
+                stickTangentialPart = stickPart1 + stickPart2;
+                //end of stickPart
             }
-            stickTangentialPart = stickPart1 + stickPart2;
-            //end of stickPart
+            else
+            {
+                //start of sliding case
+                Matrix2D<double> slidePart1 = new Matrix2D<double>(new double[15, 15]);
+                Matrix2D<double> slidePart2 = new Matrix2D<double>(new double[15, 15]);
+                Matrix2D<double> slidePart3 = new Matrix2D<double>(new double[15, 15]);
+                Matrix2D<double> slidePart4;
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int k = 0; k < 2; k++)
+                        {
+                            for (int l = 0; l < 2; l++)
+                            {
+                                slidePart4 = (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j]);
+                            }
+                        }
+                    }
+                }
+                //end of sliding case
+            }
+
+
+
+
 
             stiffnessMatrix = mainPart;
             return stiffnessMatrix;
