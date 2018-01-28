@@ -172,6 +172,17 @@ namespace ISAAR.MSolve.Matrices
             return new Vector<double>(c);
         }
 
+        public static Matrix2D<double> operator *(double c, Matrix2D<T> A)
+        {
+            if (typeof(T) != typeof(double)) throw new InvalidOperationException("Only double type is supported.");
+            double[,] AData = A.Data as double[,];
+            double[,] newData = new double[A.Rows, A.Columns];
+            for (int i = 0; i < AData.GetLength(0); i++)
+                for (int j = 0; j < AData.GetLength(1); j++)
+                    newData[i, j] = c * AData[i, j];
+            return new Matrix2D<double>(newData);
+        }
+
         public static Matrix2D<double> operator +(Matrix2D<T> A, Matrix2D<double> B)
         {
             if (!(typeof(T) == typeof(double))) throw new InvalidOperationException("Cannot add types other than double");
