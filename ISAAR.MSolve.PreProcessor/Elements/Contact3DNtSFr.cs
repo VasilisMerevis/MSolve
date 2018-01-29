@@ -335,7 +335,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         {
             Matrix2D<double> Apos = (Matrix2D<double>)A;
 
-            if (true)
+            if (phi <= 0)
             {
                 //Sticking case
                 Matrix2D<double> stickTangentialPart;
@@ -361,43 +361,39 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 return stickTangentialPart;
                 //end of stickPart
             }
-            else
-            {
-                //start of sliding case
-                Matrix2D<double> slidePart1 = new Matrix2D<double>(new double[15, 15]);
-                Matrix2D<double> slidePart2 = new Matrix2D<double>(new double[15, 15]);
-                Matrix2D<double> slidePart3 = new Matrix2D<double>(new double[15, 15]);
-                Matrix2D<double> slidePart4;
-                Matrix2D<double> m = metricTensor;
-                Vector<double> n = normalVector;
-                double en = penaltyFactor;
-                double et = tangentPenaltyFactor;
-                double mhi = frictionCoef;
-                double Tnm = Tr.Norm;
-                double Nf = Math.Abs(en * ksi3Penetration);
+            //start of sliding case
+            Matrix2D<double> slidePart1 = new Matrix2D<double>(new double[15, 15]);
+            Matrix2D<double> slidePart2 = new Matrix2D<double>(new double[15, 15]);
+            Matrix2D<double> slidePart3 = new Matrix2D<double>(new double[15, 15]);
+            Matrix2D<double> slidePart4 = new Matrix2D<double>(new double[15, 15]);
+            Matrix2D<double> m = metricTensor;
+            Vector<double> n = normalVector;
+            double en = penaltyFactor;
+            double et = tangentPenaltyFactor;
+            double mhi = frictionCoef;
+            double Tnm = Tr.Norm;
+            double Nf = Math.Abs(en * ksi3Penetration);
 
-                for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
                 {
-                    for (int j = 0; j < 2; j++)
+                    slidePart1 = slidePart1 + (-1.0 * en * mhi * Tr[i] * m[i, j] / Tnm) * Apos.Transpose() * (dRho[j] ^ n) * Apos;
+                    slidePart2 = slidePart2 + (-1.0 * et * mhi * Nf * m[i, j] / Tnm) * Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos;
+                    for (int k = 0; k < 2; k++)
                     {
-                        slidePart1 = slidePart1 + (-1.0 * en * mhi * Tr[i] * m[i, j] / Tnm) * Apos.Transpose() * (dRho[j] ^ n) * Apos;
-                        slidePart2 = slidePart2 + (-1.0 * et * mhi * Nf * m[i, j] / Tnm) * Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos;
-                        for (int k = 0; k < 2; k++)
+                        for (int l = 0; l < 2; l++)
                         {
-                            for (int l = 0; l < 2; l++)
-                            {
-                                slidePart3 = slidePart3 + (et * mhi * Nf * Tr[i] * Tr[j] * m[i, k] * m[j, l] / Math.Pow(Tnm, 3)) * Apos.Transpose() * (dRho[k] ^ dRho[l]) * Apos;
-                                slidePart4 = slidePart4 + (-1.0 * mhi * Nf * Tr[i] / Tnm) * ((m[i, l] * m[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
-                                    + m[i, k] * m[j, l] * (((Matrix2D<double>)dA[j]).Transpose() * (dRho[k] ^ dRho[l]) * Apos));
-                            }
+                            slidePart3 = slidePart3 + (et * mhi * Nf * Tr[i] * Tr[j] * m[i, k] * m[j, l] / Math.Pow(Tnm, 3)) * Apos.Transpose() * (dRho[k] ^ dRho[l]) * Apos;
+                            slidePart4 = slidePart4 + (-1.0 * mhi * Nf * Tr[i] / Tnm) * ((m[i, l] * m[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
+                                + m[i, k] * m[j, l] * (((Matrix2D<double>)dA[j]).Transpose() * (dRho[k] ^ dRho[l]) * Apos));
                         }
                     }
                 }
-                Matrix2D<double> slideTangentialPart = slidePart1 + slidePart2 + slidePart3 + slidePart4;
-                return slideTangentialPart;
-                //end of sliding case
             }
-
+            Matrix2D<double> slideTangentialPart = slidePart1 + slidePart2 + slidePart3 + slidePart4;
+            return slideTangentialPart;
+            //end of sliding case
         }
 
         public IMatrix2D<double> StiffnessMatrix(Element element)
