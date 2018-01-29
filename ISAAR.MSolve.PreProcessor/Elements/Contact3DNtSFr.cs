@@ -331,77 +331,34 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             return contactStatus;
         }
 
-        public IMatrix2D<double> StiffnessMatrix(Element element)
+        protected Matrix2D<double> CalclulateStiffMatrixForTangentialTraction(double phi)
         {
-            IMatrix2D<double> stiffnessMatrix;
-            if (this.isInitializedK == false)
-            {
-                this.GetInitialPosition(element);
-                this.isInitializedK = true;
-            }
-
-            bool activeContact = CheckContactStatus(xUpdated);
-            if (activeContact == false)
-            {
-                stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
-                return stiffnessMatrix;
-            }
-
-            Matrix2D<double> posA = (Matrix2D<double>)A;
-            Matrix2D<double> mainPart = (posA.Transpose() * (normalVector ^ normalVector) * posA);
-            mainPart.Scale(penaltyFactor);
-            if (RotationalStiffness == true)
-            {
-                Matrix2D<double> posdA1 = (Matrix2D<double>)dA[1];
-                Matrix2D<double> posdA2 = (Matrix2D<double>)dA[2];
-                Matrix2D<double> part1 = (posdA1.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA1);
-                Matrix2D<double> part2 = (posdA1.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA2);
-                Matrix2D<double> part3 = (posdA2.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA1);
-                Matrix2D<double> part4 = (posdA2.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA2);
-
-                part1.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 0]);
-                part2.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 0]);
-                part3.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 1]);
-                part4.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 1]);
-                Matrix2D<double> rotationalPart = part1 + part2 + part3 + part4;
-                stiffnessMatrix = mainPart + rotationalPart;
-                return stiffnessMatrix;
-            }
-
             Matrix2D<double> Apos = (Matrix2D<double>)A;
-            
+
             if (true)
             {
                 //Sticking case
                 Matrix2D<double> stickTangentialPart;
-                Matrix2D<double> K2Sa;
-                Matrix2D<double> K2Sb;
                 Matrix2D<double> stickPart1 = new Matrix2D<double>(new double[15, 15]);
                 Matrix2D<double> stickPart2 = new Matrix2D<double>(new double[15, 15]);
                 for (int i = 0; i < 2; i++)
                 {
                     for (int j = 0; j < 2; j++)
                     {
-                        
-                        Matrix2D<double> K1S = Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos;
-                        K1S.Scale(metricTensor[i, j]);
-                        stickPart1 = stickPart1 + K1S;
+                        stickPart1 = stickPart1 + (-1.0 * tangentPenaltyFactor * metricTensor[i, j]) * (Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos);
                         for (int k = 0; k < 2; k++)
                         {
                             for (int l = 0; l < 2; l++)
                             {
                                 Matrix2D<double> dApos = (Matrix2D<double>)dA[j];
-
-                                K2Sa = (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j]);
-                                K2Sa.Scale(Tr[i] * metricTensor[i, l] * metricTensor[j, k]);
-                                K2Sb = (dApos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)A);
-                                K2Sb.Scale(Tr[i] * metricTensor[i, k] * metricTensor[j, l]);
-                                stickPart2 = stickPart2 + K2Sa + K2Sb;
+                                stickPart2 = stickPart2 + (-1.0 * Tr[i]) * ((metricTensor[i, l] * metricTensor[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
+                                    + (metricTensor[i, k] * metricTensor[j, l]) * (dApos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)A));
                             }
                         }
                     }
                 }
                 stickTangentialPart = stickPart1 + stickPart2;
+                return stickTangentialPart;
                 //end of stickPart
             }
             else
@@ -430,21 +387,65 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                             for (int l = 0; l < 2; l++)
                             {
                                 slidePart3 = slidePart3 + (et * mhi * Nf * Tr[i] * Tr[j] * m[i, k] * m[j, l] / Math.Pow(Tnm, 3)) * Apos.Transpose() * (dRho[k] ^ dRho[l]) * Apos;
-                                slidePart4 = slidePart4 + (mhi * Nf * Tr[i] / Tnm) * ((m[i, l] * m[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
+                                slidePart4 = slidePart4 + (-1.0 * mhi * Nf * Tr[i] / Tnm) * ((m[i, l] * m[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
                                     + m[i, k] * m[j, l] * (((Matrix2D<double>)dA[j]).Transpose() * (dRho[k] ^ dRho[l]) * Apos));
                             }
                         }
                     }
                 }
                 Matrix2D<double> slideTangentialPart = slidePart1 + slidePart2 + slidePart3 + slidePart4;
+                return slideTangentialPart;
                 //end of sliding case
             }
 
+        }
 
+        public IMatrix2D<double> StiffnessMatrix(Element element)
+        {
+            IMatrix2D<double> stiffnessMatrix;
+            if (this.isInitializedK == false)
+            {
+                this.GetInitialPosition(element);
+                this.isInitializedK = true;
+            }
 
+            bool activeContact = CheckContactStatus(xUpdated);
+            if (activeContact == false)
+            {
+                stiffnessMatrix = new Matrix2D<double>(new double[15, 15]);
+                return stiffnessMatrix;
+            }
 
+            Matrix2D<double> posA = (Matrix2D<double>)A;
+            Matrix2D<double> mainPart = (posA.Transpose() * (normalVector ^ normalVector) * posA);
+            mainPart.Scale(penaltyFactor);
+
+            double phiR = CalculateCoulombFriction();
+            Matrix2D<double> tangentialMatrix;
+            if (RotationalStiffness == true)
+            {
+                Matrix2D<double> posdA1 = (Matrix2D<double>)dA[1];
+                Matrix2D<double> posdA2 = (Matrix2D<double>)dA[2];
+                Matrix2D<double> part1 = (posdA1.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA1);
+                Matrix2D<double> part2 = (posdA1.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[1] ^ normalVector) * posdA2);
+                Matrix2D<double> part3 = (posdA2.Transpose() * (normalVector ^ dRho[1]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA1);
+                Matrix2D<double> part4 = (posdA2.Transpose() * (normalVector ^ dRho[2]) * posA) + (posA.Transpose() * (dRho[2] ^ normalVector) * posdA2);
+
+                part1.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 0]);
+                part2.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 0]);
+                part3.Scale(penaltyFactor * ksi3Penetration * metricTensor[0, 1]);
+                part4.Scale(penaltyFactor * ksi3Penetration * metricTensor[1, 1]);
+                Matrix2D<double> rotationalPart = part1 + part2 + part3 + part4;
+                stiffnessMatrix = mainPart + rotationalPart;
+              
+                tangentialMatrix = CalclulateStiffMatrixForTangentialTraction(phiR);
+                stiffnessMatrix = (stiffnessMatrix as Matrix2D<double>) + tangentialMatrix;
+                return stiffnessMatrix;
+            }
 
             stiffnessMatrix = mainPart;
+            tangentialMatrix = CalclulateStiffMatrixForTangentialTraction(phiR);
+            stiffnessMatrix = (stiffnessMatrix as Matrix2D<double>) + tangentialMatrix;
             return stiffnessMatrix;
         }
 
