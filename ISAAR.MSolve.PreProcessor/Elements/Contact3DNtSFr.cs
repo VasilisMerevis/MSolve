@@ -487,8 +487,24 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             Matrix2D<double> posA = (Matrix2D<double>)A;
             Vector<double> AT_n = posA.Transpose() * normalVector;
             double en_ksi3 = penaltyFactor * ksi3Penetration;
-            Vector<double> internalForce = en_ksi3 * AT_n;
-            return internalForce.Data;
+            Vector<double> normalResidual = en_ksi3 * AT_n;            
+
+            //Calculation of tangential residual
+            Matrix2D<double> m = metricTensor;
+            Vector<double> tangentialResidual;
+            Vector<double> part1 = (Tr[0] * m[0, 0]) * (posA.Transpose() * dRho[0]);
+            Vector<double> part2 = (Tr[0] * m[1, 0]) * (posA.Transpose() * dRho[1]);
+            Vector<double> part3 = (Tr[1] * m[0, 1]) * (posA.Transpose() * dRho[0]);
+            Vector<double> part4 = (Tr[1] * m[1, 1]) * (posA.Transpose() * dRho[1]);
+
+            Vector<double> tnRes1 = new Vector<double>(part1 + part2);
+            Vector<double> tnRes2 = new Vector<double>(part3 + part4);
+            double[] finalTangentialResidual = tnRes1 + tnRes2;
+            tangentialResidual = new Vector<double>(finalTangentialResidual);
+
+            double[] internalForce = normalResidual + tangentialResidual;
+
+            return internalForce;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
