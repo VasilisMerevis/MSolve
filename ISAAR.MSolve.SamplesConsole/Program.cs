@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //CantileverExampleOneElement.Cantilever2DExample();
             //TrussExample.Truss2DExample();
             TwoBlocksInContactExample.Two3DBlocksInContact();
-            
+            TwoBlocksInFrictionExample.Two3DBlocksInFriction();
         }
         
     }
