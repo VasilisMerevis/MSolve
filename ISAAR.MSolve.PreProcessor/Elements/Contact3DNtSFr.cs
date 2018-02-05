@@ -42,6 +42,8 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             this.material = material;
             this.penaltyFactor = material.YoungModulus * 100000.0;
             RotationalStiffness = true;
+            Tr = new Vector<double>(new double[2]);
+            TrPrevious = new Vector<double>(new double[2]);
         }
 
         public Contact3DNtSFr(IFiniteElementMaterial3D material, IFiniteElementDOFEnumerator dofEnumerator)
@@ -301,7 +303,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             double phi;
             double normalForce = penaltyFactor * ksi3Penetration;
             double[,] m = metricTensor.Data;
-            double sqRoot = Tr[0] * Tr[0] * m[0, 0] + Tr[0] * Tr[1] * m[1, 2] + Tr[1] * Tr[0] * m[1, 0] + Tr[1] * Tr[1] * m[1, 1];
+            double sqRoot = Tr[0] * Tr[0] * m[0, 0] + Tr[0] * Tr[1] * m[0, 1] + Tr[1] * Tr[0] * m[1, 0] + Tr[1] * Tr[1] * m[1, 1];
             phi = Math.Sqrt(sqRoot) - (frictionCoef * normalForce);
             return phi;
         }
@@ -345,14 +347,14 @@ namespace ISAAR.MSolve.PreProcessor.Elements
                 {
                     for (int j = 0; j < 2; j++)
                     {
-                        stickPart1 = stickPart1 + (-1.0 * tangentPenaltyFactor * metricTensor[i, j]) * (Apos.Transpose() * (dRho[i] ^ dRho[j]) * Apos);
+                        stickPart1 = stickPart1 + (-1.0 * tangentPenaltyFactor * metricTensor[i, j]) * (Apos.Transpose() * (dRho[i+1] ^ dRho[j+1]) * Apos);
                         for (int k = 0; k < 2; k++)
                         {
                             for (int l = 0; l < 2; l++)
                             {
-                                Matrix2D<double> dApos = (Matrix2D<double>)dA[j];
-                                stickPart2 = stickPart2 + (-1.0 * Tr[i]) * ((metricTensor[i, l] * metricTensor[j, k]) * (Apos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)dA[j])
-                                    + (metricTensor[i, k] * metricTensor[j, l]) * (dApos.Transpose() * (dRho[k] ^ dRho[l]) * (Matrix2D<double>)A));
+                                Matrix2D<double> dApos = (Matrix2D<double>)dA[j+1];
+                                stickPart2 = stickPart2 + (-1.0 * Tr[i]) * ((metricTensor[i, l] * metricTensor[j, k]) * (Apos.Transpose() * (dRho[k+1] ^ dRho[l+1]) * (Matrix2D<double>)dA[j+1])
+                                    + (metricTensor[i, k] * metricTensor[j, l]) * (dApos.Transpose() * (dRho[k+1] ^ dRho[l+1]) * (Matrix2D<double>)A));
                             }
                         }
                     }
@@ -492,10 +494,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             //Calculation of tangential residual
             Matrix2D<double> m = metricTensor;
             Vector<double> tangentialResidual;
-            Vector<double> part1 = (Tr[0] * m[0, 0]) * (posA.Transpose() * dRho[0]);
-            Vector<double> part2 = (Tr[0] * m[1, 0]) * (posA.Transpose() * dRho[1]);
-            Vector<double> part3 = (Tr[1] * m[0, 1]) * (posA.Transpose() * dRho[0]);
-            Vector<double> part4 = (Tr[1] * m[1, 1]) * (posA.Transpose() * dRho[1]);
+            Vector<double> part1 = (Tr[0] * m[0, 0]) * (posA.Transpose() * dRho[1]);
+            Vector<double> part2 = (Tr[0] * m[1, 0]) * (posA.Transpose() * dRho[2]);
+            Vector<double> part3 = (Tr[1] * m[0, 1]) * (posA.Transpose() * dRho[1]);
+            Vector<double> part4 = (Tr[1] * m[1, 1]) * (posA.Transpose() * dRho[2]);
 
             Vector<double> tnRes1 = new Vector<double>(part1 + part2);
             Vector<double> tnRes2 = new Vector<double>(part3 + part4);
