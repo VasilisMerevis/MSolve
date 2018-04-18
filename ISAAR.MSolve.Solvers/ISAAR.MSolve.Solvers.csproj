@@ -90,6 +90,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BiCGSTAB\BiCGSTAB.cs" />
+    <Compile Include="BiCGSTAB\BiCGSTABSubdomain.cs" />
     <Compile Include="Interfaces\IIterativeSolver.cs" />
     <Compile Include="Interfaces\IPCGSearchVectorCalculator.cs" />
     <Compile Include="Interfaces\ISolver.cs" />
