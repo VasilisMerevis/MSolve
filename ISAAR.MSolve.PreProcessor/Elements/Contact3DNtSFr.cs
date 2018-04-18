@@ -37,11 +37,13 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         private Vector<double> Tr, TrPrevious;
         private Vector<double> rho, rhoPrevious;
 
+        private IMatrix2D<double> testMatrix;
+
         public Contact3DNtSFr(IFiniteElementMaterial3D material)
         {
             this.material = material;
             this.penaltyFactor = material.YoungModulus * 100000.0;
-            RotationalStiffness = true;
+            RotationalStiffness = false;
             Tr = new Vector<double>(new double[2]);
             TrPrevious = new Vector<double>(new double[2]);
         }
@@ -444,6 +446,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             stiffnessMatrix = mainPart;
             tangentialMatrix = CalclulateStiffMatrixForTangentialTraction(phiR);
             stiffnessMatrix = (stiffnessMatrix as Matrix2D<double>) + tangentialMatrix;
+            Matrix2D<double> stiffTranspose = stiffnessMatrix as Matrix2D<double>;
+            stiffTranspose.Transpose(); //Parameters above constructor
+            stiffnessMatrix = (stiffnessMatrix as Matrix2D<double>) * stiffTranspose;
+            testMatrix = stiffTranspose;
             return stiffnessMatrix;
         }
 
@@ -506,7 +512,9 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
             double[] internalForce = normalResidual + tangentialResidual;
 
-            return internalForce;
+            Vector<double> tranByForceVector = (testMatrix as Matrix2D<double>) * (new Vector<double>(internalForce));
+            //return internalForce;
+            return tranByForceVector.Data;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)

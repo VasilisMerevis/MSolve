@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.PreProcessor.Elements
         public Contact3DNtS(IFiniteElementMaterial3D material)
         {
             this.material = material;
-            this.penaltyFactor = material.YoungModulus * 100000.0;
+            this.penaltyFactor = material.YoungModulus*100;
             RotationalStiffness = true;
         }
 

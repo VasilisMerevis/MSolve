@@ -1,0 +1,126 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using ISAAR.MSolve.PreProcessor;
+using ISAAR.MSolve.Solvers.Skyline;
+using ISAAR.MSolve.Solvers.PCG;
+using ISAAR.MSolve.Problems;
+using ISAAR.MSolve.Analyzers;
+using ISAAR.MSolve.Logging;
+using ISAAR.MSolve.PreProcessor.Materials;
+using ISAAR.MSolve.PreProcessor.Elements;
+using ISAAR.MSolve.Matrices;
+using System.IO;
+
+namespace ISAAR.MSolve.SamplesConsole
+{
+    public static class SimpleBlock
+    {
+        public static IList<Node> CreateNodes()
+        {
+            //Block 1
+            IList<Node> nodes = new List<Node>();
+            Node node1 = new Node { ID = 1, X = 0.0, Y = 0.0, Z = 0.0 };
+            Node node2 = new Node { ID = 2, X = 1.0, Y = 0.0, Z = 0.0 };
+            Node node3 = new Node { ID = 3, X = 1.0, Y = 0.0, Z = 1.0 };
+            Node node4 = new Node { ID = 4, X = 0.0, Y = 0.0, Z = 1.0 };
+            Node node5 = new Node { ID = 5, X = 0.0, Y = 1.001, Z = 0.0 };
+            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.001, Z = 0.0 };
+            Node node7 = new Node { ID = 7, X = 1.0, Y = 1.001, Z = 1.0 };
+            Node node8 = new Node { ID = 8, X = 0.0, Y = 1.001, Z = 1.0 };
+
+
+            nodes.Add(node1);
+            nodes.Add(node2);
+            nodes.Add(node3);
+            nodes.Add(node4);
+            nodes.Add(node5);
+            nodes.Add(node6);
+            nodes.Add(node7);
+            nodes.Add(node8);
+
+            return nodes;
+        }
+
+        public static void SimpleBlockMethod()
+        {
+            VectorExtensions.AssignTotalAffinityCount();
+            double youngMod = 200e9;
+            double poisson = 0.30;
+            double load = -2e8;
+
+            ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
+            //VonMisesMaterial3D material2 = new VonMisesMaterial3D(youngMod, poisson, 1e10, 0.35);
+            IList<Node> nodes = CreateNodes();
+
+            Model blocksModel = new Model();
+
+            blocksModel.SubdomainsDictionary.Add(1, new Subdomain() { ID = 1 });
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                blocksModel.NodesDictionary.Add(i + 1, nodes[i]);
+            }
+
+            blocksModel.NodesDictionary[1].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[1].Constraints.Add(DOFType.Y);
+            blocksModel.NodesDictionary[1].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[2].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[2].Constraints.Add(DOFType.Y);
+            blocksModel.NodesDictionary[2].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[3].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[3].Constraints.Add(DOFType.Y);
+            blocksModel.NodesDictionary[3].Constraints.Add(DOFType.Z);
+            blocksModel.NodesDictionary[4].Constraints.Add(DOFType.X);
+            blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Y);
+            blocksModel.NodesDictionary[4].Constraints.Add(DOFType.Z);
+
+            var element1 = new Element() { ID = 1, ElementType = new Hexa8(material) };
+
+            element1.AddNode(blocksModel.NodesDictionary[4]);
+            element1.AddNode(blocksModel.NodesDictionary[3]);
+            element1.AddNode(blocksModel.NodesDictionary[2]);
+            element1.AddNode(blocksModel.NodesDictionary[1]);
+            element1.AddNode(blocksModel.NodesDictionary[8]);
+            element1.AddNode(blocksModel.NodesDictionary[7]);
+            element1.AddNode(blocksModel.NodesDictionary[6]);
+            element1.AddNode(blocksModel.NodesDictionary[5]);
+
+            blocksModel.ElementsDictionary.Add(element1.ID, element1);
+
+            blocksModel.SubdomainsDictionary[1].ElementsDictionary.Add(element1.ID, element1);
+
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[5], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[6], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[7], DOF = DOFType.Y });
+            blocksModel.Loads.Add(new Load() { Amount = load, Node = blocksModel.NodesDictionary[8], DOF = DOFType.Y });
+
+            blocksModel.ConnectDataStructures();
+            SolverSkyline linearSolution = new SolverSkyline(blocksModel);
+            //SolverPCG linearSolution = new SolverPCG()
+
+            ProblemStructural provider = new ProblemStructural(blocksModel, linearSolution.SubdomainsDictionary);
+            //NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(linearSolution, linearSolution.SubdomainsDictionary, provider, 100, blocksModel.TotalDOFs);
+            Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(linearSolution, linearSolution.SubdomainsDictionary);
+            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolution.SubdomainsDictionary);
+            //childAnalyzer.SetMaxIterations = 100;
+            //childAnalyzer.SetIterationsForMatrixRebuild = 10;
+
+            childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
+                blocksModel.NodalDOFsDictionary[5][DOFType.Y],
+                blocksModel.NodalDOFsDictionary[6][DOFType.Y],
+            blocksModel.NodalDOFsDictionary[7][DOFType.Y]});
+
+            parentAnalyzer.BuildMatrices();
+            parentAnalyzer.Initialize();
+
+            parentAnalyzer.Solve();
+
+            Console.WriteLine("Writing results for nodes 5 & 6 & 7");
+            Console.WriteLine("Dof and Values for Displacement Y");
+            Console.WriteLine(childAnalyzer.Logs[1][0]);
+        }
+    }
+}

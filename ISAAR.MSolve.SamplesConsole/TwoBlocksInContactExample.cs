@@ -25,10 +25,10 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node2 = new Node { ID = 2, X = 1.0, Y = 0.0, Z = 0.0 };
             Node node3 = new Node { ID = 3, X = 1.0, Y = 0.0, Z = 1.0 };
             Node node4 = new Node { ID = 4, X = 0.0, Y = 0.0, Z = 1.0 };
-            Node node5 = new Node { ID = 5, X = 0.0, Y = 1.001, Z = 0.0 };
-            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.001, Z = 0.0 };
-            Node node7 = new Node { ID = 7, X = 1.0, Y = 1.001, Z = 1.0 };
-            Node node8 = new Node { ID = 8, X = 0.0, Y = 1.001, Z = 1.0 };
+            Node node5 = new Node { ID = 5, X = 0.0, Y = 1.0, Z = 0.0 };
+            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.0, Z = 0.0 };
+            Node node7 = new Node { ID = 7, X = 1.0, Y = 1.0, Z = 1.0 };
+            Node node8 = new Node { ID = 8, X = 0.0, Y = 1.0, Z = 1.0 };
             //Block 2
             Node node9 = new Node { ID = 9, X = 0.25, Y = 1.0, Z = 0.25 };
             Node node10 = new Node { ID = 10, X = 0.75, Y = 1.0, Z = 0.25 };
@@ -64,10 +64,10 @@ namespace ISAAR.MSolve.SamplesConsole
             VectorExtensions.AssignTotalAffinityCount();
             double youngMod = 200e9;
             double poisson = 0.3;
-            double load = -200000000;
+            double load = -2e9;
 
             ElasticMaterial3D material = new ElasticMaterial3D() { YoungModulus = youngMod, PoissonRatio = poisson };
-
+            //VonMisesMaterial3D material2 = new VonMisesMaterial3D(youngMod, poisson, 1e11, 0.15);
             IList<Node> nodes = CreateNodes();
 
             Model blocksModel = new Model();
@@ -201,7 +201,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSolution.SubdomainsDictionary);
             childAnalyzer.SetMaxIterations = 100;
-            childAnalyzer.SetIterationsForMatrixRebuild = 1;
+            childAnalyzer.SetIterationsForMatrixRebuild = 10;
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 blocksModel.NodalDOFsDictionary[13][DOFType.Y],
@@ -224,7 +224,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             parentAnalyzer.Solve();
 
-            Console.WriteLine("Writing results for nodes 9 & 11");
+            Console.WriteLine("Writing results for nodes 13 & 15");
             Console.WriteLine("Dof and Values for Displacement Y");
             Console.WriteLine(childAnalyzer.Logs[1][0]);
         }
