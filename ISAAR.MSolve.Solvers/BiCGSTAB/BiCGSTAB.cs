@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Solvers.Interfaces;
-using ISAAR.MSolve.Solvers.BiCGSTAB;
 using ISAAR.MSolve.PreProcessor;
 using ISAAR.MSolve.Matrices;
 using System.Diagnostics;
 using System.IO;
 
-namespace ISAAR.MSolve.Solvers.Skyline
+namespace ISAAR.MSolve.Solvers
 {
     public class BiCGSTAB : ISolver
     {
@@ -40,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.Skyline
             if (model.SubdomainsDictionary.Count != 1) throw new InvalidOperationException("Skyline solver operates on one subdomain only.");
             foreach (ISolverSubdomain subdomain in subdomainsDictionary.Values)
             {
-                if (((SkylineMatrix2D<double>)subdomain.Matrix).IsFactorized) continue;
+                //if (((SkylineMatrix2D<double>)subdomain.Matrix).IsFactorized) continue;
 
                 List<Vector<double>> zems = new List<Vector<double>>();
                 List<int> zemColumns = new List<int>();
@@ -55,44 +54,49 @@ namespace ISAAR.MSolve.Solvers.Skyline
             foreach (ISolverSubdomain subdomain in subdomainsDictionary.Values)
             {
                 
-                double[] x = ((Vector<double>)subdomain.Solution).Data;
-                Vector<double> xVector = new Vector<double>(x);
-
-                Vector<double> pVector = new Vector<double>(new double[x.Length]);
-                Vector<double> vVector = new Vector<double>(new double[x.Length]);
+                Vector<double> xVector = new Vector<double>(((Vector<double>)subdomain.Solution).Data);
+                Vector<double> pVector = new Vector<double>(xVector.Data.Length);
+                Vector<double> vVector = new Vector<double>(xVector.Data.Length);
 
                 Matrix2D<double> A = ((Matrix2D<double>)subdomain.Matrix);
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
 
                 Vector<double> bVector = (Vector<double>)subdomain.RHS;
-                double[] r = bVector-(A * xVector);
-
-                Vector<double> rVector = new Vector<double>(r);
-                double rho1 = rVector * rVector;
-
+                Vector<double> rVector = new Vector<double>(bVector - (A * xVector));
+                Vector<double> r0hatVector = rVector;
+                
                 double rho0 = 1.0;
                 double w = 1.0;
                 double a = 1.0;
-                double b = rho1 * accuracyDigits / (rho0 * w);
+                double rho1 = r0hatVector * rVector;
+                double b;
+                double[] x;
 
-                double[] inter1 = (pVector - w * vVector);
-                Vector<double> inter1Vector = new Vector<double>(inter1);
-
-                Vector<double> inter2Vector = b * inter1Vector;
-                double[] inter3 = rVector + inter2Vector;
-                pVector = new Vector<double>(inter3);
-
-                vVector = A * pVector;
-                a = rho1 / (rVector * vVector);
-                Vector<double> sVector = new Vector<double>(rVector - a * vVector);
-                Vector<double> tVector = A * sVector;
-                w = (tVector * sVector) / (tVector * tVector);
-                rho0 = rho1;
-                rho1 = -w * (rVector * tVector);
-                xVector = new Vector<double>(xVector + a * pVector);
-                rVector = new Vector<double>(sVector - w * tVector);
-
+                Vector<double> sVector;
+                Vector<double> tVector;
+                int iters = 100;
+                double converged;
+                for (int i = 0; i < iters; i++)
+                {                   
+                    b = (rho1 / rho0) * (a / w);
+                    pVector = new Vector<double>(rVector + b * (new Vector<double>((pVector - w * vVector))));
+                    vVector = A * pVector;
+                    a = rho1 / (r0hatVector * vVector);
+                    sVector = new Vector<double>(rVector - a * vVector);
+                    tVector = A * sVector;
+                    w = (tVector * sVector) / (tVector * tVector);
+                    rho0 = rho1;
+                    rho1 = -w * (r0hatVector * tVector);
+                    xVector = new Vector<double>(xVector + a * pVector);
+                    rVector = new Vector<double>(sVector - w * tVector);
+                    converged = rVector.Norm;
+                    if (i==iters | converged <  0.0001)
+                    {
+                        break;
+                    }
+                }
+                x = xVector.Data;
                 A.Solve(subdomain.RHS, x);
                 stopWatch.Stop();
                 //DestroyAccuracy(subdomain);
