@@ -5,6 +5,7 @@ using System.Text;
 
 using ISAAR.MSolve.PreProcessor;
 using ISAAR.MSolve.Solvers.Skyline;
+using ISAAR.MSolve.Solvers.BiCGSTAB;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Logging;
@@ -77,7 +78,8 @@ namespace ISAAR.MSolve.SamplesConsole
             trussModel.Loads.Add(new Load() { Amount = loadY, Node = trussModel.NodesDictionary[3], DOF = DOFType.Y });
 
             trussModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(trussModel);
+            //SolverSkyline solution = new SolverSkyline(trussModel);
+            BiCGSTAB solution = new BiCGSTAB(trussModel);
 
             ProblemStructural provider = new ProblemStructural(trussModel, solution.SubdomainsDictionary);
 

@@ -8,7 +8,7 @@ using ISAAR.MSolve.Matrices;
 using System.Diagnostics;
 using System.IO;
 
-namespace ISAAR.MSolve.Solvers
+namespace ISAAR.MSolve.Solvers.BiCGSTAB
 {
     public class BiCGSTAB : ISolver
     {
@@ -97,13 +97,9 @@ namespace ISAAR.MSolve.Solvers
                     }
                 }
                 x = xVector.Data;
-                A.Solve(subdomain.RHS, x);
+                
                 stopWatch.Stop();
-                //DestroyAccuracy(subdomain);
-
-                x = new double[A.Rows];
-                //LessenAccuracy(1e-7);
-                A.Solve(subdomain.RHS, x);
+               
                 var xVec = new Vector<double>(x);
                 var y = xVec.Norm;
 

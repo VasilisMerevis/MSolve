@@ -7,7 +7,7 @@ using ISAAR.MSolve.Solvers.Interfaces;
 using ISAAR.MSolve.PreProcessor;
 using ISAAR.MSolve.Matrices;
 
-namespace ISAAR.MSolve.Solvers
+namespace ISAAR.MSolve.Solvers.BiCGSTAB
 {
     public class BiCGSTABSubdomain : ISolverSubdomain
     {
