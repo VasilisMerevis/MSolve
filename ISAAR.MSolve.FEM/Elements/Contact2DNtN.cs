@@ -52,34 +52,34 @@ namespace ISAAR.MSolve.FEM.Elements
             return element.Nodes;
         }
 
-        private double[] CalculateNormalUnitVector()
+        private Vector CalculateNormalUnitVector(Element element)
         {
-            double X1 = Nodes[1].XCoordinate;
-            double Y1 = Nodes[1].YCoordinate;
-            double X2 = Nodes[2].XCoordinate;
-            double Y2 = Nodes[2].YCoordinate;
-            double[] normalVector = new double[] { X2 - X1, Y2 - Y1 };
-            double normalVectorLength = VectorOperations.VectorNorm2(normalVector);
-            double[] normalUnitVec = new double[] { normalVector[0] / normalVectorLength, normalVector[1] / normalVectorLength };
+            double X1 = element.INodes[0].X;
+            double Y1 = element.INodes[0].Y;
+            double X2 = element.INodes[1].X;
+            double Y2 = element.INodes[1].Y;
+            Vector normalVector = new Vector(new double[] { X2 - X1, Y2 - Y1 });
+            double normalVectorLength = normalVector.Norm;
+            Vector normalUnitVec = new Vector(new double[] { normalVector[0] / normalVectorLength, normalVector[1] / normalVectorLength });
             return normalUnitVec;
         }
 
-        private double[,] CalculatePositionMatrix()
+        private Matrix2D CalculatePositionMatrix()
         {
-            double[,] aMatrix = new double[,]
+            Matrix2D aMatrix = new Matrix2D(new double[,]
                 {
                     { -1,0,1,0},
                     {0,-1,0,1 }
-                };
+                });
             return aMatrix;
         }
 
-        private double CalculateNormalGap()
+        private double CalculateNormalGap(Element element)
         {
-            double[,] A = CalculatePositionMatrix();
-            double[,] AT = MatrixOperations.Transpose(A);
-            double[] n = CalculateNormalUnitVector();
-            double[] AT_n = VectorOperations.MatrixVectorProduct(AT, n);
+            Matrix2D A = CalculatePositionMatrix();
+            Matrix2D AT = A.Transpose();
+            Vector n = CalculateNormalUnitVector(element);
+            Vector AT_n = AT * n;
             double[] xupd = new double[] {
                 Nodes[1].XCoordinate + DisplacementVector[0],
                 Nodes[1].YCoordinate + DisplacementVector[1],
@@ -129,6 +129,58 @@ namespace ISAAR.MSolve.FEM.Elements
         }
 
         public IMatrix2D DampingMatrix(IElement element)
+        {
+            throw new NotImplementedException();
+        }
+
+        #region IFiniteElement Members
+
+
+        public bool MaterialModified
+        {
+            get { return false; }
+        }
+
+        public void ResetMaterialModified()
+        {
+        }
+
+        #endregion
+
+        #region IFiniteElement Members
+
+        public void ClearMaterialState()
+        {
+        }
+
+        public void ClearMaterialStresses()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        public Tuple<double[], double[]> CalculateStresses(Element element, double[] local_Displacements, double[] local_d_Displacements)
+        {
+            throw new Exception("Not implemented");
+        }
+
+        public double[] CalculateForcesForLogging(Element element, double[] localDisplacements)
+        {
+            return CalculateForces(element, localDisplacements, new double[localDisplacements.Length]);
+        }
+
+        public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
+        {
+            throw new Exception("Not implemented");
+        }
+
+        public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
+        {
+            throw new Exception("Not implemented");
+        }
+
+        public void SaveMaterialState()
         {
             throw new NotImplementedException();
         }
