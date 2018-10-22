@@ -20,16 +20,20 @@ namespace ISAAR.MSolve.FEM.Elements
         private static readonly DOFType[][] dofs = new DOFType[][] { nodalDOFTypes, nodalDOFTypes };
         private readonly double youngModulus;
         private IElementDOFEnumerator dofEnumerator = new GenericDOFEnumerator();
+        private double[] DisplacementVector { get; set; }
+        double PenaltyFactor { get; set; }
 
         public Contact2DNtN(double youngModulus)
         {
             this.youngModulus = youngModulus;
+            DisplacementVector = new double[4];
         }
 
         public Contact2DNtN(double youngModulus, IElementDOFEnumerator dofEnumerator)
             : this(youngModulus)
         {
             this.dofEnumerator = dofEnumerator;
+            DisplacementVector = new double[4];
         }
 
         public int ID
@@ -50,6 +54,12 @@ namespace ISAAR.MSolve.FEM.Elements
         public IList<Node> GetNodesForMatrixAssembly(Element element)
         {
             return element.Nodes;
+        }
+
+        public IElementDOFEnumerator DOFEnumerator
+        {
+            get { return dofEnumerator; }
+            set { dofEnumerator = value; }
         }
 
         private Vector CalculateNormalUnitVector(Element element)
@@ -80,57 +90,46 @@ namespace ISAAR.MSolve.FEM.Elements
             Matrix2D AT = A.Transpose();
             Vector n = CalculateNormalUnitVector(element);
             Vector AT_n = AT * n;
-            double[] xupd = new double[] {
-                Nodes[1].XCoordinate + DisplacementVector[0],
-                Nodes[1].YCoordinate + DisplacementVector[1],
-                Nodes[2].XCoordinate + DisplacementVector[2],
-                Nodes[2].YCoordinate + DisplacementVector[3]
-            };
-            double normalGap = VectorOperations.VectorDotProduct(xupd, AT_n);
+            Vector xupd = new Vector(new double[] {
+                element.INodes[0].X + DisplacementVector[0],
+                element.INodes[0].Y + DisplacementVector[1],
+                element.INodes[1].X + DisplacementVector[2],
+                element.INodes[1].Y + DisplacementVector[3]
+            });
+            double normalGap = xupd * AT_n;
             return normalGap;
         }
 
         public IMatrix2D StiffnessMatrix(IElement element)
         {
-            double penetration = CalculateNormalGap();
+            double penetration = CalculateNormalGap(element as Element);
             if (penetration <= 0)
             {
-                double[] n = CalculateNormalUnitVector();
-                double[,] A = CalculatePositionMatrix();
-                double[,] AT = MatrixOperations.Transpose(A);
-                double[,] nxn = VectorOperations.VectorVectorTensorProduct(n, n);
-                double[,] nxn_A = MatrixOperations.MatrixProduct(nxn, A);
-                double[,] AT_nxn_A = MatrixOperations.MatrixProduct(AT, nxn_A);
-                double[,] globalStiffnessMatrix = MatrixOperations.ScalarMatrixProductNew(PenaltyFactor, AT_nxn_A);
+                Vector n = CalculateNormalUnitVector(element as Element);
+                Matrix2D A = CalculatePositionMatrix();
+                Matrix2D AT = A.Transpose();
+                Matrix2D nxn = n.OuterProduct(n);
+                Matrix2D nxn_A = nxn * A;
+                Matrix2D AT_nxn_A = AT * nxn_A;
+                AT_nxn_A.Scale(PenaltyFactor);
+                IMatrix2D globalStiffnessMatrix = AT_nxn_A;
                 return globalStiffnessMatrix;
             }
             else
             {
-                double[,] globalStifnessMatrix = new double[4, 4];
+                IMatrix2D globalStifnessMatrix = new Matrix2D(new double[4, 4]);
                 return globalStifnessMatrix;
             }
         }
 
         public IMatrix2D MassMatrix(IElement element)
         {
-            double x2 = Math.Pow(element.INodes[1].X - element.INodes[0].X, 2);
-            double y2 = Math.Pow(element.INodes[1].Y - element.INodes[0].Y, 2);
-            double L = Math.Sqrt(x2 + y2);
-
-            double totalMass = Density * SectionArea * L;
-
-            return new Matrix2D(new double[,]
-            {
-                { totalMass/2,0,0,0},
-                {0,totalMass/2,0,0 },
-                {0,0,totalMass/2,0 },
-                {0,0,0,totalMass/2 }
-            });
+            return null;
         }
 
         public IMatrix2D DampingMatrix(IElement element)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         #region IFiniteElement Members
@@ -172,7 +171,24 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
-            throw new Exception("Not implemented");
+            DisplacementVector = localDisplacements;
+            double penetration = CalculateNormalGap(element);
+            if (penetration <= 0)
+            {
+                Matrix2D A = CalculatePositionMatrix();
+                Matrix2D AT = A.Transpose();
+                Vector n = CalculateNormalUnitVector(element);
+                Vector AT_n = AT * n;
+                double ksi = CalculateNormalGap(element);
+                Vector ksi_AT_n = ksi * AT_n;
+                Vector e_ksi_AT_n = PenaltyFactor * ksi_AT_n;
+                return e_ksi_AT_n.Data;
+            }
+            else
+            {
+                double[] internalGlobalForcesVector = new double[4];
+                return internalGlobalForcesVector;
+            }
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)

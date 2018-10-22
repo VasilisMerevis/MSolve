@@ -101,6 +101,24 @@ namespace ISAAR.MSolve.Numerical.LinearAlgebra
             for (int i = 0; i < data.Length; i++) vData[i] *= scale;
         }
 
+        public Matrix2D OuterProduct(Vector v2)
+        {
+            int vector1rows = data.Length;
+            int vector2cols = v2.Length;
+            double[,] matrix = new double[vector1rows, vector2cols];
+            double[] vector1 = data;
+            double[] vector2 = v2.Data as double[];
+            for (int i = 0; i < vector1rows; i++)
+            {
+                for (int j = 0; j < vector2cols; j++)
+                {
+                    matrix[i, j] = vector1[i] * vector2[j];
+                }
+            }
+            Matrix2D matrixResult = new Matrix2D(matrix);
+            return matrixResult;
+        }
+
         public void Add(Vector v)
         {
             double[] v1Data = data;
