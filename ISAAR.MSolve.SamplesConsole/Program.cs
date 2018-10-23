@@ -148,6 +148,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //FEM.Cantilever2DPreprocessor.Run();
             //FEM.WallWithOpenings.Run();
             //SeparateCodeCheckingClass.Check06();
+            ContactNtNLinearTruss.Run();
 
         }
     }
