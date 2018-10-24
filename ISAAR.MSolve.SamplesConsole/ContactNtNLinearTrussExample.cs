@@ -90,8 +90,12 @@ namespace ISAAR.MSolve.SamplesConsole
             SolverSkyline solver = new SolverSkyline(linearSystems[0]);
 
             ProblemStructural provider = new ProblemStructural(trussModel, linearSystems);
-
-            LinearAnalyzer childAnalyzer = new LinearAnalyzer(solver, linearSystems);
+            var subdomainUpdaters = new[] { new NonLinearSubdomainUpdater(trussModel.Subdomains[0]) };
+            var subdomainMappers = new[] { new SubdomainGlobalMapping(trussModel.Subdomains[0]) };
+            int totalDOFs = trussModel.TotalDOFs;
+            var linearSystemsArray = new[] { linearSystems[0] };
+            NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solver, linearSystemsArray, subdomainUpdaters, 
+                subdomainMappers, provider, 10, totalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystems);
 
             childAnalyzer.LogFactories[0] = new LinearAnalyzerLogFactory(new int[] {

@@ -161,7 +161,7 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public Tuple<double[], double[]> CalculateStresses(Element element, double[] local_Displacements, double[] local_d_Displacements)
         {
-            throw new Exception("Not implemented");
+            return null;
         }
 
         public double[] CalculateForcesForLogging(Element element, double[] localDisplacements)
