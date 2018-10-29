@@ -37,9 +37,9 @@ namespace ISAAR.MSolve.SamplesConsole
         public static void Run()
         {
             VectorExtensions.AssignTotalAffinityCount();
-            double youngMod = 1000;
+            double youngMod = 1000.0;
             double poisson = 0.3;
-            double loadX = 50;
+            double loadX = 50.0;
             double sectionArea = 1.0;
 
             IList<Node> nodes = ContactNtNLinearTruss.CreateNodes();
@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.SamplesConsole
             trussModel.SubdomainsDictionary[0].ElementsDictionary.Add(element2.ID, element2);
             trussModel.SubdomainsDictionary[0].ElementsDictionary.Add(element3.ID, element3);
 
-            trussModel.Loads.Add(new Load() { Amount = loadX, Node = trussModel.NodesDictionary[3], DOF = DOFType.X });
+            trussModel.Loads.Add(new Load() { Amount = loadX, Node = trussModel.NodesDictionary[2], DOF = DOFType.X });
 
             trussModel.ConnectDataStructures();
 
@@ -99,8 +99,8 @@ namespace ISAAR.MSolve.SamplesConsole
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystems);
 
             childAnalyzer.LogFactories[0] = new LinearAnalyzerLogFactory(new int[] {
-                trussModel.NodalDOFsDictionary[3][DOFType.X],
-                trussModel.NodalDOFsDictionary[3][DOFType.Y],
+                trussModel.NodalDOFsDictionary[2][DOFType.X],
+                trussModel.NodalDOFsDictionary[3][DOFType.X]
                 });
 
             parentAnalyzer.BuildMatrices();
