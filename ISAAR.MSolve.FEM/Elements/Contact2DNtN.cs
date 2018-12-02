@@ -27,6 +27,7 @@ namespace ISAAR.MSolve.FEM.Elements
         {
             this.youngModulus = youngModulus;
             DisplacementVector = new double[4];
+            PenaltyFactor = 100.0 * youngModulus;
         }
 
         public Contact2DNtN(double youngModulus, IElementDOFEnumerator dofEnumerator)
@@ -34,6 +35,7 @@ namespace ISAAR.MSolve.FEM.Elements
         {
             this.dofEnumerator = dofEnumerator;
             DisplacementVector = new double[4];
+            PenaltyFactor = 100.0 * youngModulus;
         }
 
         public int ID
@@ -198,7 +200,7 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public void SaveMaterialState()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

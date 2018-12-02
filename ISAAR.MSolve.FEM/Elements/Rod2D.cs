@@ -180,7 +180,7 @@ namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
 
         public void SaveMaterialState()
         {
-            throw new NotImplementedException();
+            
         }
 
         #endregion
