@@ -149,8 +149,8 @@ namespace ISAAR.MSolve.SamplesConsole
             //FEM.WallWithOpenings.Run();
             //SeparateCodeCheckingClass.Check06();
             //ContactNtNLinearTruss.Run();
-            //ContactNtNTwoBLocks.Run();
-            TwoQuadsExample.Run();
+            ContactNtNTwoBLocks.Run();
+            //TwoQuadsExample.Run();
 
         }
     }

@@ -27,8 +27,8 @@ namespace ISAAR.MSolve.SamplesConsole
             Node node3 = new Node { ID = 3, X = 1.0, Y = 1.0 };
             Node node4 = new Node { ID = 4, X = 0, Y = 1.0 };
 
-            Node node5 = new Node { ID = 5, X = 0, Y = 1.01 };
-            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.01 };
+            Node node5 = new Node { ID = 5, X = 0, Y = 1.1 };
+            Node node6 = new Node { ID = 6, X = 1.0, Y = 1.1 };
             Node node7 = new Node { ID = 7, X = 1.0, Y = 2.01 };
             Node node8 = new Node { ID = 8, X = 0, Y = 2.01 };
 
@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.SamplesConsole
         public static void Run()
         {
             VectorExtensions.AssignTotalAffinityCount();
-            double youngMod = 100000.0;
+            double youngMod = 200.0e9;
             double poisson = 0.3;
             double loadY = 50000.0;
             
@@ -82,8 +82,8 @@ namespace ISAAR.MSolve.SamplesConsole
             };
 
 
-            var element1 = new Element() { ID = 1, ElementType = new Quad4(material) };
-            var element2 = new Element() { ID = 2, ElementType = new Quad4(material) };
+            var element1 = new Element() { ID = 1, ElementType = new Quad4(material) { Thickness = 1.0 } };
+            var element2 = new Element() { ID = 2, ElementType = new Quad4(material) { Thickness = 1.0 } };
             
             var element3 = new Element() { ID = 3, ElementType = new Contact2DNtN(youngMod) };
             var element4 = new Element() { ID = 4, ElementType = new Contact2DNtN(youngMod) };
@@ -129,12 +129,12 @@ namespace ISAAR.MSolve.SamplesConsole
             int totalDOFs = twoBlocks.TotalDOFs;
             var linearSystemsArray = new[] { linearSystems[0] };
             NewtonRaphsonNonLinearAnalyzer childAnalyzer = new NewtonRaphsonNonLinearAnalyzer(solver, linearSystemsArray, subdomainUpdaters,
-                subdomainMappers, provider, 10, totalDOFs);
+                subdomainMappers, provider, 40, totalDOFs);
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystems);
 
             childAnalyzer.LogFactories[0] = new LinearAnalyzerLogFactory(new int[] {
-                twoBlocks.NodalDOFsDictionary[3][DOFType.Y],
-                twoBlocks.NodalDOFsDictionary[4][DOFType.Y]
+                twoBlocks.NodalDOFsDictionary[4][DOFType.Y],
+                twoBlocks.NodalDOFsDictionary[5][DOFType.Y]
                 });
 
             parentAnalyzer.BuildMatrices();

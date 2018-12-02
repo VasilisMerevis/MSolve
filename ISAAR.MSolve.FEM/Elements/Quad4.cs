@@ -368,29 +368,32 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public Tuple<double[], double[]> CalculateStresses(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
-            double[,] faXY = GetCoordinates(element);
-            double[,] faDS = new double[iInt3, 24];
-            double[,] faS = new double[iInt3, 8];
-            double[,,] faB = new double[iInt3, 24, 6];
-            double[] faDetJ = new double[iInt3];
-            double[,,] faJ = new double[iInt3, 3, 3];
-            double[] faWeight = new double[iInt3];
-            double[,] fadStrains = new double[iInt3, 6];
-            double[,] faStrains = new double[iInt3, 6];
-            //CalcQ4GaussMatrices(ref iInt, faXY, faWeight, faS, faDS, faJ, faDetJ, faB);
-            //CalcQ4Strains(ref iInt, faB, localDisplacements, faStrains);
-            //CalcQ4Strains(ref iInt, faB, localdDisplacements, fadStrains);
+            //double[,] faXY = GetCoordinates(element);
+            //double[,] faDS = new double[iInt3, 24];
+            //double[,] faS = new double[iInt3, 8];
+            //double[,,] faB = new double[iInt3, 24, 6];
+            //double[] faDetJ = new double[iInt3];
+            //double[,,] faJ = new double[iInt3, 3, 3];
+            //double[] faWeight = new double[iInt3];
+            //double[,] fadStrains = new double[iInt3, 6];
+            //double[,] faStrains = new double[iInt3, 6];
+            ////CalcQ4GaussMatrices(ref iInt, faXY, faWeight, faS, faDS, faJ, faDetJ, faB);
+            ////CalcQ4Strains(ref iInt, faB, localDisplacements, faStrains);
+            ////CalcQ4Strains(ref iInt, faB, localdDisplacements, fadStrains);
 
-            double[] dStrains = new double[6];
-            double[] strains = new double[6];
-            for (int i = 0; i < materialsAtGaussPoints.Length; i++)
-            {
-                for (int j = 0; j < 6; j++) dStrains[j] = fadStrains[i, j];
-                for (int j = 0; j < 6; j++) strains[j] = faStrains[i, j];
-                materialsAtGaussPoints[i].UpdateMaterial(new StressStrainVectorContinuum2D(dStrains));
-            }
+            //double[] dStrains = new double[6];
+            //double[] strains = new double[6];
+            //for (int i = 0; i < materialsAtGaussPoints.Length; i++)
+            //{
+            //    for (int j = 0; j < 6; j++) dStrains[j] = fadStrains[i, j];
+            //    for (int j = 0; j < 6; j++) strains[j] = faStrains[i, j];
+            //    materialsAtGaussPoints[i].UpdateMaterial(new StressStrainVectorContinuum2D(dStrains));
+            //}
 
-            return new Tuple<double[], double[]>(strains, materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses.Data);
+            //return new Tuple<double[], double[]>(strains, materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses.Data);
+
+            // do nothing
+            return null;
         }
 
         public double[] CalculateForcesForLogging(Element element, double[] localDisplacements)
@@ -400,32 +403,36 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public double[] CalculateForces(Element element, double[] localTotalDisplacements, double[] localdDisplacements)
         {
-            //Vector<double> d = new Vector<double>(localdDisplacements.Length);
-            //for (int i = 0; i < localdDisplacements.Length; i++) 
-            //    //d[i] = localdDisplacements[i] + localTotalDisplacements[i];
-            //    d[i] = localTotalDisplacements[i];
+            ////Vector<double> d = new Vector<double>(localdDisplacements.Length);
+            ////for (int i = 0; i < localdDisplacements.Length; i++) 
+            ////    //d[i] = localdDisplacements[i] + localTotalDisplacements[i];
+            ////    d[i] = localTotalDisplacements[i];
+            ////double[] faForces = new double[24];
+            ////StiffnessMatrix(element).Multiply(d, faForces);
+
+            //double[,] faStresses = new double[iInt3, 6];
+            //for (int i = 0; i < materialsAtGaussPoints.Length; i++)
+            //    for (int j = 0; j < 6; j++) faStresses[i, j] = materialsAtGaussPoints[i].Stresses[j];
+
+            //double[,] faXYZ = GetCoordinates(element);
+            //double[,] faDS = new double[iInt3, 24];
+            //double[,] faS = new double[iInt3, 8];
+            //double[,,] faB = new double[iInt3, 24, 6];
+            //double[] faDetJ = new double[iInt3];
+            //double[,,] faJ = new double[iInt3, 3, 3];
+            //double[] faWeight = new double[iInt3];
             //double[] faForces = new double[24];
-            //StiffnessMatrix(element).Multiply(d, faForces);
+            ////	CalcQ4GaussMatrices(ref iInt, faXYZ, faWeight, faS, faDS, faJ, faDetJ, faB);
+            ////	CalcQ4Forces(ref iInt, faB, faWeight, faStresses, faForces);
 
-            double[,] faStresses = new double[iInt3, 6];
-            for (int i = 0; i < materialsAtGaussPoints.Length; i++)
-                for (int j = 0; j < 6; j++) faStresses[i, j] = materialsAtGaussPoints[i].Stresses[j];
+            //double[] localdForces = new double[localdDisplacements.Length];
+            //StiffnessMatrix(element).Multiply(new Vector(localdDisplacements), localdForces);
 
-            double[,] faXYZ = GetCoordinates(element);
-            double[,] faDS = new double[iInt3, 24];
-            double[,] faS = new double[iInt3, 8];
-            double[,,] faB = new double[iInt3, 24, 6];
-            double[] faDetJ = new double[iInt3];
-            double[,,] faJ = new double[iInt3, 3, 3];
-            double[] faWeight = new double[iInt3];
-            double[] faForces = new double[24];
-            //	CalcQ4GaussMatrices(ref iInt, faXYZ, faWeight, faS, faDS, faJ, faDetJ, faB);
-            //	CalcQ4Forces(ref iInt, faB, faWeight, faStresses, faForces);
+            //return faForces;
 
             double[] localdForces = new double[localdDisplacements.Length];
-            StiffnessMatrix(element).Multiply(new Vector(localdDisplacements), localdForces);
-
-            return faForces;
+            StiffnessMatrix(element).Multiply(new Vector(localTotalDisplacements), localdForces);
+            return localdForces;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)
@@ -450,17 +457,18 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public void ClearMaterialState()
         {
-            throw new NotImplementedException();
+            //foreach (ElasticMaterial2D m in materialsAtGaussPoints) m.ClearState();
+            
         }
 
         public void SaveMaterialState()
         {
-            throw new NotImplementedException();
+            //foreach (ElasticMaterial2D m in materialsAtGaussPoints) m.SaveState();
         }
 
         public void ClearMaterialStresses()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         #region IStructuralFiniteElement Members
@@ -469,7 +477,9 @@ namespace ISAAR.MSolve.FEM.Elements
         {
             get
             {
-                throw new NotImplementedException();
+                //foreach (ElasticMaterial2D material in materialsAtGaussPoints)
+                //    if (material.Modified) return true;
+                return false;
             }
         }
 

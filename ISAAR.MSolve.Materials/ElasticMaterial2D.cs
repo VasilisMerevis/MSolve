@@ -19,6 +19,8 @@ namespace ISAAR.MSolve.Materials
         public StressState2D StressState { get; }
         public double YoungModulus { get; set; }
 
+        private double[] stressesNew = new double[3];
+
         public ElasticMaterial2D(StressState2D stressState)
         {
             this.StressState = stressState;
@@ -39,7 +41,9 @@ namespace ISAAR.MSolve.Materials
 
         public void ClearState()
         {
-            throw new NotImplementedException();
+
+            Array.Clear(stresses, 0, stresses.Length);
+            Array.Clear(stressesNew, 0, stressesNew.Length);
         }
 
         public void ClearStresses()
@@ -49,7 +53,7 @@ namespace ISAAR.MSolve.Materials
 
         public void SaveState()
         {
-            throw new NotImplementedException();
+            Array.Copy(this.stressesNew, this.stresses, 3);
         }
 
         public void UpdateMaterial(StressStrainVectorContinuum2D strains)
