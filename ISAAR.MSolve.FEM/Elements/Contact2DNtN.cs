@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.FEM.Elements
         private readonly double youngModulus;
         private IElementDOFEnumerator dofEnumerator = new GenericDOFEnumerator();
         private double[] DisplacementVector { get; set; }
-        double PenaltyFactor { get; set; }
+        public double PenaltyFactor { get; set; }
 
         public Contact2DNtN(double youngModulus)
         {

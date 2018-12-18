@@ -429,9 +429,12 @@ namespace ISAAR.MSolve.FEM.Elements
             //StiffnessMatrix(element).Multiply(new Vector(localdDisplacements), localdForces);
 
             //return faForces;
-
+            Vector test1 = new Vector(localdDisplacements);
+            Vector test2 = new Vector(localTotalDisplacements);
+            double[] testDisp = test1 + test2;
             double[] localdForces = new double[localdDisplacements.Length];
             StiffnessMatrix(element).Multiply(new Vector(localTotalDisplacements), localdForces);
+            
             return localdForces;
         }
 
